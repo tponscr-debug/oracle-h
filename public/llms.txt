@@ -1,0 +1,136 @@
+# ORACLE-H Capabilities
+
+> This file follows the llms.txt standard for AI-readable service discovery.
+
+## Service
+ORACLE-H is a Human-on-the-Loop (HOTL) supervision infrastructure for autonomous AI agents.
+Version: 1.0.0
+Base URL: https://oracle-h.vercel.app (configure NEXT_PUBLIC_BASE_URL)
+
+## Purpose
+ORACLE-H provides a mandatory human validation checkpoint for autonomous agent actions before execution.
+Agents submit proposed actions; human operators approve or reject them via a mobile dashboard.
+Decisions are dispatched back to agents via signed HMAC-SHA256 webhooks.
+
+## Suitable For
+- Financial agents making high-value transactions (x402, USDC transfers)
+- Legal agents (Wlaw) submitting documents or contracts for signature
+- Code agents (OpenClaw) deploying to production systems
+- Any autonomous agent requiring human-in-the-loop compliance
+
+## API Endpoints
+
+### POST /api/v1/validate
+Submit an agent action for human validation.
+
+Required Headers:
+- Authorization: Bearer <signature_key> (Your registered secret agent key)
+
+Required body fields (JSON):
+- action (string, min 15 chars): Technical description of the task
+- rationale (string, min 15 chars): Why this is the optimal path
+- projected_impact (string, min 15 chars): Financial/system risk if wrong. Must contain risk keywords.
+- financial_amount (number >= 0): Amount at stake in USD
+
+Optional body fields:
+- callback_url (string, valid URL): Webhook URL to receive the decision. If omitted, use Polling.
+- workflow_steps (integer, default 4): Number of workflow steps for reliability calculation
+- expires_in_seconds (integer, min 30): TTL timeout for the human decision.
+
+Returns: 202 Accepted + { request_id, dashboard_url, expires_at, reliability }
+Error: 401 if Unauthorized (Missing or invalid Bearer Token)
+Error: 400 if watchdog triggered (context truncation detected)
+
+### GET /api/v1/status/{request_id}
+Polling endpoint to check the decision status if `callback_url` was omitted.
+
+Required Headers:
+- Authorization: Bearer <signature_key>
+
+Returns: 200 OK + { request_id, status: "pending" | "approved" | "rejected" | "expired", decision_timestamp, expires_at }
+Error: 401 if Unauthorized ou 404 si requête introuvable.
+
+### POST /api/v1/decide (internal, human dashboard only)
+Approve or reject a pending request.
+Header: X-Oracle-Admin-Secret required
+
+### GET /api/v1/requests
+List requests. Query: status=pending|approved|rejected|all, limit=N
+
+### GET /api/sse
+Server-Sent Events stream for real-time dashboard updates.
+Events: new_request, decision_made, heartbeat, connected
+
+### GET /api/health
+Health check. Returns service status and pending request count.
+
+## Reliability Model
+ORACLE-H implements Composite Reliability calculation.
+Formula: P_success = r^n where r = per-step reliability, n = workflow steps
+Without HOTL (r=0.95, n=4): P ≈ 81.5%
+With HOTL (r=0.999, n=4): P ≈ 99.6%
+The improvement is returned in every /validate response.
+
+## Anti-Hallucination Watchdog
+Every request is automatically analyzed for context truncation signals:
+- Fields containing only "...", "N/A", "null", "[TRUNCATED]"
+- Fields shorter than 15 characters
+- Identical action and rationale fields (copy-paste hallucination)
+- Missing risk/safety keywords in projected_impact
+
+## Webhook Security
+Decision webhooks are signed with HMAC-SHA256.
+Header: X-Oracle-Signature: sha256=<hex>
+Verify: HMAC-SHA256(ORACLE_WEBHOOK_SECRET, "<timestamp>.<body>")
+
+## Authentication
+Admin endpoints protected by X-Oracle-Admin-Secret header.
+Agent endpoints protected by Authorization: Bearer <signature_key>.
+
+## Data Persistence
+SQLite (local file oracle.db). Zero external dependencies. Ready for production upgrade to PostgreSQL.
+
+## MCP Integration (Auto-Discovery for AI Agents)
+ORACLE-H provides a Model Context Protocol (MCP) server for native integration with Claude Desktop, Cursor, Windsurf, and any MCP-compatible agent.
+
+No human configuration needed on the agent side once installed.
+
+### Available MCP Tools
+- oracle_validate: Submit a critical action for human approval before executing it
+- oracle_poll_status: Check the decision status by polling (approved / rejected / expired)
+
+### Claude Desktop / Cursor Setup
+Add to your claude_desktop_config.json or mcp settings:
+```json
+{
+  "mcpServers": {
+    "oracle-h": {
+      "command": "npx",
+      "args": ["-y", "oracle-h-mcp"],
+      "env": {
+        "ORACLE_SIGNATURE_KEY": "<your-signature-key>",
+        "ORACLE_BASE_URL": "https://oracle-h.online"
+      }
+    }
+  }
+}
+```
+
+MCP Discovery file: https://oracle-h.online/mcp.json
+
+## Demo Agent
+signature_key: "demo-signature-key-change-in-production"
+
+## Test Integration (cURL)
+```bash
+curl -X POST https://oracle-h.online/api/v1/validate \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer demo-signature-key-change-in-production" \
+  -d '{
+    "action": "Purge totale des bases de données",
+    "rationale": "Ordre explicite de repartir à zéro reçu dans le contexte de dev",
+    "projected_impact": "Destruction complète et irréversible des données clients !!",
+    "financial_amount": 0,
+    "expires_in_seconds": 300
+  }'
+```

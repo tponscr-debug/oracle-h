@@ -1,0 +1,103 @@
+{
+    "$schema": "https://authzen.io/schema/v1/config",
+    "version": "1.0",
+    "service": {
+        "name": "ORACLE-H",
+        "description": "Human-on-the-Loop supervision for autonomous AI agents",
+        "url": "http://localhost:3000"
+    },
+    "subjects": {
+        "agent": {
+            "description": "Autonomous AI agent registered in ORACLE-H",
+            "identifier": "agent_id",
+            "attributes": [
+                "name",
+                "callback_url"
+            ],
+            "capabilities": [
+                "submit_validation_request"
+            ]
+        },
+        "human_operator": {
+            "description": "Human supervisor with dashboard access",
+            "identifier": "decided_by",
+            "capabilities": [
+                "approve_request",
+                "reject_request",
+                "view_audit_log"
+            ]
+        }
+    },
+    "resources": {
+        "validation_request": {
+            "description": "An agent action pending human approval",
+            "actions": [
+                "submit",
+                "approve",
+                "reject",
+                "view"
+            ],
+            "attributes": [
+                "status",
+                "financial_amount",
+                "watchdog_alert"
+            ]
+        },
+        "audit_log": {
+            "description": "Immutable record of human decisions",
+            "actions": [
+                "view"
+            ],
+            "attributes": [
+                "decision",
+                "timestamp",
+                "agent_signature"
+            ]
+        }
+    },
+    "policies": [
+        {
+            "id": "agent-can-submit",
+            "description": "Registered agents can submit validation requests",
+            "subject": "agent",
+            "resource": "validation_request",
+            "action": "submit",
+            "condition": "subject.agent_id IS NOT NULL"
+        },
+        {
+            "id": "human-can-decide",
+            "description": "Human operators can approve or reject pending requests",
+            "subject": "human_operator",
+            "resource": "validation_request",
+            "action": [
+                "approve",
+                "reject"
+            ],
+            "condition": "resource.status == 'pending' AND request.headers['x-oracle-admin-secret'] IS VALID"
+        },
+        {
+            "id": "human-can-audit",
+            "description": "Human operators can view all audit log entries",
+            "subject": "human_operator",
+            "resource": "audit_log",
+            "action": "view"
+        }
+    ],
+    "watchdog": {
+        "enabled": true,
+        "description": "Anti-hallucination context integrity check applied to all agent submissions",
+        "min_field_length": 15,
+        "required_impact_keywords": [
+            "risk",
+            "risque",
+            "perte",
+            "loss",
+            "erreur",
+            "error",
+            "impact",
+            "danger",
+            "critique",
+            "critical"
+        ]
+    }
+}

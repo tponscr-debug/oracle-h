@@ -1,0 +1,45 @@
+{
+    "schema_version": "v1",
+    "name": "oracle-h",
+    "display_name": "ORACLE-H — Human-on-the-Loop Validation",
+    "description": "Safety infrastructure for autonomous AI agents. Submit critical or irreversible actions for human approval before execution. Includes anti-hallucination watchdog and reliability scoring.",
+    "version": "1.0.0",
+    "homepage": "https://oracle-h.online",
+    "documentation": "https://oracle-h.online/llms.txt",
+    "openapi": "https://oracle-h.online/openapi.json",
+    "mcp_server": {
+        "install": {
+            "npx": {
+                "command": "npx",
+                "args": [
+                    "-y",
+                    "oracle-h-mcp"
+                ],
+                "env": {
+                    "ORACLE_SIGNATURE_KEY": "<your-signature-key>",
+                    "ORACLE_BASE_URL": "https://oracle-h.online"
+                }
+            }
+        },
+        "tools": [
+            {
+                "name": "oracle_validate",
+                "description": "Submit a risky or irreversible action for human approval via Telegram before executing it"
+            },
+            {
+                "name": "oracle_poll_status",
+                "description": "Check if the human operator has approved or rejected a pending validation request"
+            }
+        ]
+    },
+    "use_cases": [
+        "Before executing destructive database commands (DROP, DELETE, TRUNCATE)",
+        "Before making financial transactions",
+        "Before sending mass emails or notifications",
+        "Before modifying production infrastructure",
+        "Any action with a large blast radius or irreversible consequences"
+    ],
+    "contact": {
+        "url": "https://oracle-h.online"
+    }
+}

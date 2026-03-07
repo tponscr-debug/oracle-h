@@ -1,0 +1,21 @@
+{
+    "name": "ORACLE-H",
+    "short_name": "ORACLE-H",
+    "description": "Validation humaine (Human-on-the-Loop) pour Agents IA Autonomes",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#0a0f1e",
+    "theme_color": "#0a0f1e",
+    "icons": [
+        {
+            "src": "/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        }
+    ]
+}

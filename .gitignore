@@ -1,0 +1,21 @@
+# Dependencies
+node_modules/
+mcp-server/node_modules/
+
+# Build
+.next/
+mcp-server/dist/
+
+# DB
+oracle.db
+
+# Env
+.env
+.env.local
+.env.production
+
+# OS
+.DS_Store
+
+# Logs
+*.log

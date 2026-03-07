@@ -1,0 +1,1474 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ORACLE-H — Rapport Stratégique Complet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-void:      #050810;
+    --bg-primary:   #0a0f1e;
+    --bg-secondary: #0d1526;
+    --bg-card:      #111d35;
+    --bg-elevated:  #1e2d4a;
+    --gold:         #fbbf24;
+    --gold-dim:     rgba(251,191,36,0.12);
+    --gold-border:  rgba(251,191,36,0.22);
+    --green:        #34d399;
+    --green-dim:    rgba(52,211,153,0.10);
+    --orange:       #fb923c;
+    --orange-dim:   rgba(251,146,60,0.10);
+    --red:          #fb7185;
+    --red-dim:      rgba(251,113,133,0.10);
+    --blue:         #60a5fa;
+    --blue-dim:     rgba(96,165,250,0.10);
+    --text-primary:   #f0f4ff;
+    --text-secondary: #c5d0e8;
+    --text-muted:     #7a8ba8;
+    --text-subtle:    #4a5c78;
+    --border:       rgba(251,191,36,0.10);
+    --border-hover: rgba(251,191,36,0.30);
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'Inter', sans-serif;
+    --display: 'Space Grotesk', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: var(--sans);
+    font-size: 15px;
+    line-height: 1.65;
+    background-image:
+      linear-gradient(rgba(251,191,36,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(251,191,36,0.025) 1px, transparent 1px);
+    background-size: 40px 40px;
+  }
+
+  /* ── NAV ─────────────────────────────────────────── */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    background: rgba(10,15,30,0.88);
+    backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border);
+    padding: 0 2rem;
+    height: 58px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .nav-logo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    flex-shrink: 0;
+  }
+
+  .nav-hex {
+    width: 30px; height: 30px;
+    border: 1.5px solid rgba(251,191,36,0.5);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    color: var(--gold);
+    background: rgba(251,191,36,0.06);
+  }
+
+  .nav-title {
+    font-family: var(--display);
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--text-primary);
+    letter-spacing: 0.08em;
+  }
+
+  .nav-subtitle {
+    font-size: 11px;
+    color: var(--text-subtle);
+    font-family: var(--mono);
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 0.15rem;
+    overflow-x: auto;
+  }
+
+  .nav-links a {
+    padding: 5px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-muted);
+    text-decoration: none;
+    white-space: nowrap;
+    transition: all 0.15s;
+    border: 1px solid transparent;
+  }
+  .nav-links a:hover {
+    color: var(--gold);
+    background: var(--gold-dim);
+    border-color: var(--gold-border);
+  }
+
+  /* ── LAYOUT ─────────────────────────────────────── */
+  .page {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 90px 2rem 6rem;
+  }
+
+  /* ── HERO ────────────────────────────────────────── */
+  .hero {
+    text-align: center;
+    padding: 4rem 0 3rem;
+  }
+
+  .hero-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 16px;
+    border-radius: 999px;
+    border: 1px solid var(--gold-border);
+    background: var(--gold-dim);
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--gold);
+    margin-bottom: 1.5rem;
+    letter-spacing: 0.06em;
+  }
+
+  .hero-dot {
+    width: 6px; height: 6px;
+    background: var(--gold);
+    border-radius: 50%;
+    animation: pulse-dot 2s infinite;
+  }
+
+  @keyframes pulse-dot {
+    0%,100% { opacity: 1; transform: scale(1); }
+    50%      { opacity: 0.4; transform: scale(0.7); }
+  }
+
+  h1 {
+    font-family: var(--display);
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+    margin-bottom: 1rem;
+    color: var(--text-primary);
+  }
+
+  h1 span { color: var(--gold); }
+
+  .hero-sub {
+    font-size: 16px;
+    color: var(--text-secondary);
+    max-width: 540px;
+    margin: 0 auto 2rem;
+    line-height: 1.7;
+  }
+
+  .hero-meta {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+  }
+
+  .hero-stat {
+    text-align: center;
+  }
+
+  .hero-stat-value {
+    font-family: var(--mono);
+    font-size: 1.6rem;
+    font-weight: 500;
+    color: var(--gold);
+  }
+
+  .hero-stat-label {
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+
+  /* ── TEAM GRID ───────────────────────────────────── */
+  .team-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 1rem;
+    margin: 2rem 0 3rem;
+  }
+
+  .team-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1rem;
+    transition: all 0.2s;
+    cursor: default;
+  }
+  .team-card:hover {
+    border-color: var(--gold-border);
+    transform: translateY(-2px);
+  }
+
+  .team-avatar {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px;
+    margin-bottom: 10px;
+  }
+
+  .team-name {
+    font-family: var(--display);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 3px;
+  }
+
+  .team-role {
+    font-size: 11px;
+    color: var(--text-muted);
+    line-height: 1.4;
+    margin-bottom: 8px;
+  }
+
+  .team-domain {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--gold);
+    padding: 3px 8px;
+    border-radius: 4px;
+    background: var(--gold-dim);
+    border: 1px solid var(--gold-border);
+  }
+
+  /* ── SECTION ─────────────────────────────────────── */
+  .section {
+    margin-bottom: 4rem;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .section-icon {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+
+  .section-title {
+    font-family: var(--display);
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--text-primary);
+  }
+
+  .section-agent {
+    font-size: 12px;
+    color: var(--text-muted);
+    font-family: var(--mono);
+    margin-top: 2px;
+  }
+
+  h2 {
+    font-family: var(--display);
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin: 1.5rem 0 0.75rem;
+  }
+
+  h3 {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin: 1rem 0 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-family: var(--sans);
+  }
+
+  p { margin-bottom: 0.75rem; color: var(--text-secondary); }
+
+  /* ── CARDS ───────────────────────────────────────── */
+  .card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+  }
+
+  .card-title {
+    font-family: var(--display);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+  }
+
+  .card p { font-size: 14px; margin-bottom: 0; }
+
+  /* ── ALERT CARDS ─────────────────────────────────── */
+  .alert {
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1rem;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+  }
+
+  .alert-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+
+  .alert-content { flex: 1; }
+
+  .alert-title {
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 4px;
+  }
+
+  .alert-desc { font-size: 13px; color: var(--text-secondary); margin: 0; }
+
+  .alert-critical { background: var(--red-dim); border: 1px solid rgba(251,113,133,0.25); }
+  .alert-critical .alert-title { color: var(--red); }
+
+  .alert-warning { background: var(--orange-dim); border: 1px solid rgba(251,146,60,0.25); }
+  .alert-warning .alert-title { color: var(--orange); }
+
+  .alert-success { background: var(--green-dim); border: 1px solid rgba(52,211,153,0.25); }
+  .alert-success .alert-title { color: var(--green); }
+
+  .alert-info { background: var(--blue-dim); border: 1px solid rgba(96,165,250,0.2); }
+  .alert-info .alert-title { color: var(--blue); }
+
+  .alert-gold { background: var(--gold-dim); border: 1px solid var(--gold-border); }
+  .alert-gold .alert-title { color: var(--gold); }
+
+  /* ── TABLES ──────────────────────────────────────── */
+  .table-wrap { overflow-x: auto; margin-bottom: 1.25rem; border-radius: 10px; border: 1px solid var(--border); }
+
+  table { width: 100%; border-collapse: collapse; font-size: 13px; }
+
+  th {
+    background: var(--bg-secondary);
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 10px 14px;
+    text-align: left;
+  }
+
+  td {
+    padding: 10px 14px;
+    border-top: 1px solid var(--border);
+    color: var(--text-secondary);
+    vertical-align: top;
+  }
+
+  tr:hover td { background: rgba(251,191,36,0.02); }
+
+  /* ── CODE ────────────────────────────────────────── */
+  pre, code {
+    font-family: var(--mono);
+    font-size: 12.5px;
+  }
+
+  pre {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    overflow-x: auto;
+    margin-bottom: 1rem;
+    color: var(--text-secondary);
+    line-height: 1.65;
+  }
+
+  code {
+    background: rgba(251,191,36,0.07);
+    color: var(--gold);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 12px;
+  }
+
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+
+  /* ── PRIORITY GRID ───────────────────────────────── */
+  .priority-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  @media (max-width: 600px) { .priority-grid { grid-template-columns: 1fr; } }
+
+  .priority-block {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 1rem;
+  }
+
+  .priority-block-title {
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .priority-block-title span {
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+  }
+
+  .dot-critical { background: var(--red); }
+  .dot-high     { background: var(--orange); }
+  .dot-medium   { background: var(--blue); }
+  .dot-low      { background: var(--text-muted); }
+
+  .priority-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-bottom: 7px;
+    line-height: 1.4;
+  }
+
+  .priority-item::before {
+    content: '→';
+    color: var(--text-subtle);
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  /* ── TAGS ────────────────────────────────────────── */
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 1rem; }
+
+  .tag {
+    font-family: var(--mono);
+    font-size: 11px;
+    padding: 4px 10px;
+    border-radius: 5px;
+    border: 1px solid;
+    white-space: nowrap;
+  }
+
+  .tag-gold   { color: var(--gold);   background: var(--gold-dim);   border-color: var(--gold-border); }
+  .tag-green  { color: var(--green);  background: var(--green-dim);  border-color: rgba(52,211,153,0.25); }
+  .tag-red    { color: var(--red);    background: var(--red-dim);    border-color: rgba(251,113,133,0.25); }
+  .tag-orange { color: var(--orange); background: var(--orange-dim); border-color: rgba(251,146,60,0.25); }
+  .tag-blue   { color: var(--blue);   background: var(--blue-dim);   border-color: rgba(96,165,250,0.2); }
+  .tag-muted  { color: var(--text-muted); background: rgba(255,255,255,0.04); border-color: var(--border); }
+
+  /* ── TIMELINE ────────────────────────────────────── */
+  .timeline { position: relative; padding-left: 1.5rem; }
+
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 5px; top: 6px; bottom: 0;
+    width: 1px;
+    background: var(--border);
+  }
+
+  .timeline-item {
+    position: relative;
+    margin-bottom: 1.5rem;
+  }
+
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -1.25rem; top: 6px;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--gold);
+    border: 2px solid var(--bg-primary);
+  }
+
+  .timeline-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--gold);
+    font-weight: 500;
+    margin-bottom: 6px;
+  }
+
+  .timeline-title {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 14px;
+    margin-bottom: 4px;
+  }
+
+  .timeline-desc {
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  /* ── QUOTE ───────────────────────────────────────── */
+  .quote {
+    border-left: 2px solid var(--gold);
+    padding: 0.5rem 1rem;
+    margin: 1rem 0;
+    background: rgba(251,191,36,0.04);
+    border-radius: 0 8px 8px 0;
+  }
+
+  .quote p {
+    font-style: italic;
+    color: var(--text-secondary);
+    margin: 0;
+    font-size: 14px;
+  }
+
+  /* ── DIVIDER ─────────────────────────────────────── */
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 2.5rem 0;
+  }
+
+  /* ── PRICING GRID ────────────────────────────────── */
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+    gap: 1rem;
+    margin: 1rem 0;
+  }
+
+  .pricing-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem;
+    transition: border-color 0.2s;
+  }
+
+  .pricing-card.featured {
+    border-color: var(--gold-border);
+    background: rgba(251,191,36,0.04);
+  }
+
+  .pricing-tier {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 6px;
+  }
+
+  .pricing-price {
+    font-family: var(--display);
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--gold);
+    margin-bottom: 4px;
+  }
+
+  .pricing-price span { font-size: 13px; color: var(--text-muted); font-weight: 400; }
+
+  .pricing-desc {
+    font-size: 12px;
+    color: var(--text-muted);
+    margin-bottom: 10px;
+  }
+
+  .pricing-feature {
+    font-size: 12px;
+    color: var(--text-secondary);
+    padding: 3px 0;
+    display: flex;
+    gap: 6px;
+    align-items: flex-start;
+  }
+
+  .pricing-feature::before {
+    content: '✓';
+    color: var(--green);
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+
+  /* ── FOOTER ──────────────────────────────────────── */
+  footer {
+    text-align: center;
+    padding: 3rem 2rem;
+    border-top: 1px solid var(--border);
+    margin-top: 4rem;
+  }
+
+  footer p { font-size: 13px; color: var(--text-subtle); margin: 0; }
+
+  /* ── SCROLL ANCHOR ───────────────────────────────── */
+  [id] { scroll-margin-top: 70px; }
+
+  /* ── RESPONSIVE ──────────────────────────────────── */
+  @media (max-width: 700px) {
+    .nav-links { display: none; }
+    h1 { font-size: 1.8rem; }
+    .hero-meta { gap: 1.2rem; }
+    .priority-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a class="nav-logo" href="#hero">
+    <div class="nav-hex">⬡</div>
+    <div>
+      <div class="nav-title">ORACLE-H</div>
+      <div class="nav-subtitle">Rapport Stratégique 2026</div>
+    </div>
+  </a>
+  <div class="nav-links">
+    <a href="#security">Sécurité</a>
+    <a href="#mcp">MCP &amp; LLM</a>
+    <a href="#distribution">Distribution</a>
+    <a href="#strategy">Stratégie</a>
+    <a href="#design">Design/UX</a>
+    <a href="#roadmap">Roadmap</a>
+  </div>
+</nav>
+
+<div class="page">
+
+  <!-- HERO -->
+  <section class="hero" id="hero">
+    <div class="hero-badge">
+      <span class="hero-dot"></span>
+      ANALYSE COMPLÈTE — 5 SPÉCIALISTES — MARS 2026
+    </div>
+    <h1>ORACLE-H<br><span>Strategic Report</span></h1>
+    <p class="hero-sub">
+      Cinq experts de rang mondial ont analysé chaque couche du projet — architecture MCP, découvrabilité LLM, distribution écosystème, positionnement produit, et design. Voici leurs conclusions.
+    </p>
+    <div class="hero-meta">
+      <div class="hero-stat">
+        <div class="hero-stat-value">1</div>
+        <div class="hero-stat-label">CVE Critique identifiée</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-value">6</div>
+        <div class="hero-stat-label">Tools MCP manquants</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-value">11</div>
+        <div class="hero-stat-label">Registres non listés</div>
+      </div>
+      <div class="hero-stat">
+        <div class="hero-stat-value">0</div>
+        <div class="hero-stat-label">Concurrent SaaS réel</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- TEAM -->
+  <section class="section">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(251,191,36,0.1);border:1px solid var(--gold-border);">👥</div>
+      <div>
+        <div class="section-title">L'Équipe</div>
+        <div class="section-agent">5 experts · analyses parallèles · 2026-03-07</div>
+      </div>
+    </div>
+    <div class="team-grid">
+      <div class="team-card">
+        <div class="team-avatar" style="background:rgba(251,113,133,0.12);border:1px solid rgba(251,113,133,0.25);">🛡️</div>
+        <div class="team-name">Dr. Yuki Tanaka</div>
+        <div class="team-role">AI Safety & Agent Infrastructure Architect</div>
+        <div class="team-domain">Security · MCP</div>
+      </div>
+      <div class="team-card">
+        <div class="team-avatar" style="background:rgba(96,165,250,0.12);border:1px solid rgba(96,165,250,0.25);">🧠</div>
+        <div class="team-name">Jordan Wei</div>
+        <div class="team-role">LLM Context & Prompt Engineer</div>
+        <div class="team-domain">LLM · Discoverability</div>
+      </div>
+      <div class="team-card">
+        <div class="team-avatar" style="background:rgba(52,211,153,0.12);border:1px solid rgba(52,211,153,0.25);">🌐</div>
+        <div class="team-name">Priya Nair</div>
+        <div class="team-role">Developer Ecosystem & Distribution Architect</div>
+        <div class="team-domain">npm · Registries</div>
+      </div>
+      <div class="team-card">
+        <div class="team-avatar" style="background:rgba(251,191,36,0.12);border:1px solid var(--gold-border);">📈</div>
+        <div class="team-name">Alex Volkov</div>
+        <div class="team-role">AI Product Strategist</div>
+        <div class="team-domain">Strategy · GTM</div>
+      </div>
+      <div class="team-card">
+        <div class="team-avatar" style="background:rgba(251,146,60,0.12);border:1px solid rgba(251,146,60,0.25);">✦</div>
+        <div class="team-name">Mehdi Laraaich</div>
+        <div class="team-role">Creative Developer (Awwwards-level)</div>
+        <div class="team-domain">Design · UX</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════
+       SECTION 1 — SÉCURITÉ & ARCHITECTURE MCP
+  ══════════════════════════════════════════════════ -->
+  <section class="section" id="security">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(251,113,133,0.1);border:1px solid rgba(251,113,133,0.25);">🛡️</div>
+      <div>
+        <div class="section-title">Sécurité &amp; Architecture MCP</div>
+        <div class="section-agent">Dr. Yuki Tanaka — AI Safety &amp; Agent Infrastructure Architect</div>
+      </div>
+    </div>
+
+    <div class="quote"><p>"La sécurité n'est pas une contrainte — c'est le produit. Un agent qui n'a pas de checkpoint humain n'est pas un agent, c'est un bug en attente d'exécution."</p></div>
+
+    <h2>Vulnérabilités critiques à corriger immédiatement</h2>
+
+    <div class="alert alert-critical">
+      <div class="alert-icon">🔴</div>
+      <div class="alert-content">
+        <div class="alert-title">CVE · Telegram Webhook non authentifié</div>
+        <p class="alert-desc">Le handler <code>/api/webhook/telegram</code> ne vérifie pas le header <code>X-Telegram-Bot-Api-Secret-Token</code>. N'importe qui connaissant l'URL du webhook peut forger un <code>callback_query</code> et approuver/rejeter n'importe quelle requête. Élévation de privilège complète en une requête HTTP. Fix: 30 minutes.</p>
+      </div>
+    </div>
+
+    <div class="alert alert-critical">
+      <div class="alert-icon">🔴</div>
+      <div class="alert-content">
+        <div class="alert-title">Secrets en fallback hard-codés en production</div>
+        <p class="alert-desc"><code>ORACLE_ADMIN_SECRET || "oracle-admin-dev-secret"</code> — si la variable d'env n'est pas définie, le service démarre avec un secret public. Aucun fail-fast au démarrage. Fix: vérification <code>process.exit(1)</code> si secrets absents.</p>
+      </div>
+    </div>
+
+    <div class="alert alert-warning">
+      <div class="alert-icon">🟠</div>
+      <div class="alert-content">
+        <div class="alert-title">Race condition sur double-décision Telegram + Dashboard</div>
+        <p class="alert-desc">Le <code>SELECT</code> puis <code>UPDATE</code> ne sont pas dans une transaction SQLite atomique. En multi-process (Next.js cluster), deux décisions simultanées peuvent toutes deux passer le check <code>status === "pending"</code>. Fix: <code>BEGIN IMMEDIATE</code> transaction.</p>
+      </div>
+    </div>
+
+    <div class="alert alert-warning">
+      <div class="alert-icon">🟠</div>
+      <div class="alert-content">
+        <div class="alert-title">Demo key active en production</div>
+        <p class="alert-desc"><code>demo-signature-key-change-in-production</code> est seedée en base au démarrage. En prod, n'importe qui peut soumettre des requêtes légitimes et inonder l'opérateur de notifications Telegram. Fix: variable <code>SEED_DEMO_AGENT=false</code>.</p>
+      </div>
+    </div>
+
+    <div class="alert alert-warning">
+      <div class="alert-icon">🟠</div>
+      <div class="alert-content">
+        <div class="alert-title">Webhook sans retry logic</div>
+        <p class="alert-desc">Une seule tentative, timeout 5s. Si l'agent est temporairement indisponible, la décision est perdue et <code>webhook_sent = 0</code>. Aucun backoff. L'agent en mode callback-only ne reçoit jamais la décision.</p>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <h2>Gaps MCP — Surface insuffisante</h2>
+
+    <p>Les MCP servers de référence exposent entre 8 et 25 tools. ORACLE-H n'en expose que 2. Il manque des primitives essentielles pour les agents en production réelle.</p>
+
+    <div class="table-wrap">
+      <table>
+        <tr><th>Tool manquant</th><th>Priorité</th><th>Utilité</th><th>Effort</th></tr>
+        <tr><td><code>oracle_cancel</code></td><td><span class="tag tag-red">HAUTE</span></td><td>Annuler une requête pending si le contexte change</td><td>3h</td></tr>
+        <tr><td><code>oracle_list_pending</code></td><td><span class="tag tag-red">HAUTE</span></td><td>Recovery après crash agent — évite les doublons</td><td>3h</td></tr>
+        <tr><td><code>oracle_wait</code></td><td><span class="tag tag-red">HAUTE</span></td><td>Long-polling bloquant (élimine le polling manuel toutes les 10s)</td><td>1j</td></tr>
+        <tr><td><code>oracle_batch_validate</code></td><td><span class="tag tag-orange">MOYENNE</span></td><td>Trading bots: soumettre N actions en 1 appel</td><td>2j</td></tr>
+        <tr><td><code>oracle_get_context</code></td><td><span class="tag tag-orange">MOYENNE</span></td><td>Récupérer le contexte complet d'une requête par ID</td><td>2h</td></tr>
+        <tr><td><code>oracle_escalate</code></td><td><span class="tag tag-muted">BASSE</span></td><td>Réescalader une requête expirée à un autre superviseur</td><td>4h</td></tr>
+      </table>
+    </div>
+
+    <div class="alert alert-info">
+      <div class="alert-icon">💡</div>
+      <div class="alert-content">
+        <div class="alert-title">MCP Resources &amp; Prompts manquantes</div>
+        <p class="alert-desc">Le spec MCP définit 3 primitives: Tools, Resources, Prompts. ORACLE-H n'utilise que les Tools. Des Resources comme <code>oracle://requests/pending</code> et un Prompt <code>oracle_safety_assessment</code> amélioreraient significativement l'intégration avec LangGraph et AutoGen.</p>
+      </div>
+    </div>
+
+    <h2>Problèmes de robustesse protocole</h2>
+
+    <div class="card">
+      <div class="card-title">Requêtes "orphelines" — Expiration non persistée</div>
+      <p>L'expiration est calculée dynamiquement dans <code>/status</code> mais le statut reste <code>pending</code> en DB. Les requêtes périmées s'accumulent infiniment. Aucun cleanup job n'existe.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">Absence d'idempotency key</div>
+      <p>Un agent qui crash immédiatement après <code>oracle_validate</code> (avant de recevoir le <code>request_id</code>) peut créer des doublons en cas de retry. Solution: support d'un champ <code>idempotency_key</code>.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">Pas de rate limiting sur <code>/api/v1/validate</code></div>
+      <p>Un bug de boucle infinie dans un agent peut inonder l'opérateur de notifications Telegram. Max 10 requêtes pending simultanées par agent recommandé.</p>
+    </div>
+
+    <h2>Scalabilité SQLite</h2>
+    <div class="table-wrap">
+      <table>
+        <tr><th>Seuil agents</th><th>Action recommandée</th></tr>
+        <tr><td>&lt; 50 agents simultanés</td><td>SQLite WAL — parfaitement adapté, rien à faire</td></tr>
+        <tr><td>50–500 agents</td><td>Surveiller la contention écriture, ajouter Litestream</td></tr>
+        <tr><td>&gt; 500 agents actifs</td><td>Migrer vers <strong>Turso</strong> (SQLite distribué) ou PostgreSQL</td></tr>
+        <tr><td>Multi-instance</td><td>Migration obligatoire — SQLite singleton par process</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════
+       SECTION 2 — MCP & LLM DISCOVERABILITY
+  ══════════════════════════════════════════════════ -->
+  <section class="section" id="mcp">
+    <div class="section-header">
+      <div class="section-icon" style="background:var(--blue-dim);border:1px solid rgba(96,165,250,0.25);">🧠</div>
+      <div>
+        <div class="section-title">MCP &amp; Découvrabilité LLM</div>
+        <div class="section-agent">Jordan Wei — LLM Context &amp; Prompt Engineer</div>
+      </div>
+    </div>
+
+    <div class="quote"><p>"Un outil que le LLM ne comprend pas instinctivement n'existe pas. La description d'un tool MCP est de la publicité pour l'attention d'un modèle."</p></div>
+
+    <h2>Problèmes avec les descriptions MCP actuelles</h2>
+
+    <div class="alert alert-warning">
+      <div class="alert-icon">⚠️</div>
+      <div class="alert-content">
+        <div class="alert-title">Phrase d'ouverture trop générique</div>
+        <p class="alert-desc">"Submit a critical action..." — le verbe "Submit" est partagé avec des outils de messaging et logging. Le LLM peut hésiter entre <code>oracle_validate</code> et un outil de notification.</p>
+      </div>
+    </div>
+
+    <div class="alert alert-warning">
+      <div class="alert-icon">⚠️</div>
+      <div class="alert-content">
+        <div class="alert-title">oracle_poll_status ne force pas la boucle</div>
+        <p class="alert-desc">Un LLM peut appeler poll une seule fois et passer à autre chose si le statut est "pending". L'instruction de boucle doit être explicite et répétée.</p>
+      </div>
+    </div>
+
+    <h2>Descriptions MCP optimisées — Prêtes à déployer</h2>
+
+    <h3>oracle_validate — nouvelle description</h3>
+    <pre>MANDATORY HUMAN APPROVAL GATE: Call this tool BEFORE executing any action that is
+irreversible, destructive, or financially significant.
+
+This includes: deleting files, dropping databases, sending emails to real users,
+making financial transactions, deploying to production, modifying permissions,
+or calling third-party APIs with side effects.
+
+USE THIS TOOL WHEN:
+- Action cannot be undone (file deletion, DB drop, git force-push)
+- Action has financial implications (payments, purchases, billing changes)
+- Action affects real users or external systems
+- Action modifies infrastructure (server config, DNS, deployments)
+
+DO NOT USE THIS TOOL FOR:
+- Read-only operations (queries, status checks, file reads)
+- Local or sandboxed operations with no external effects
+
+Returns a request_id. Call oracle_poll_status every 10-15s until "approved" or "rejected".
+DO NOT proceed until you receive a terminal status. If unreachable, treat as BLOCKED.</pre>
+
+    <h3>oracle_poll_status — nouvelle description</h3>
+    <pre>POLLING PROTOCOL (mandatory):
+1. Call this with the request_id from oracle_validate
+2. If "pending": wait 10-15 seconds, call again
+3. Repeat until "approved" | "rejected" | "expired"
+4. NEVER proceed while status is "pending"
+
+DECISION RULES (non-negotiable):
+- "approved" → Human confirmed. You may execute the action.
+- "rejected" → Human denied. DO NOT execute. Inform user and stop.
+- "expired"  → No response in time. Treat as rejected. DO NOT execute.
+- "pending"  → Still waiting. Poll again in 10-15 seconds.</pre>
+
+    <h2>System Prompt Snippet (39 lignes)</h2>
+    <p>À copier-coller directement dans le system prompt de l'agent :</p>
+    <pre>## Human Approval Gate — ORACLE-H (MANDATORY)
+
+Call oracle_validate BEFORE executing any action in these categories:
+
+DESTRUCTIVE: Deleting files, dropping databases, removing users, git force-push
+EXTERNAL WRITES: Sending emails, posting to APIs, submitting forms
+FINANCIAL: Payments, billing changes, subscription modifications
+INFRASTRUCTURE: Deployments, server config, DNS, environment variables
+
+POLLING PROTOCOL:
+1. Note the request_id from oracle_validate
+2. Wait 10-15 seconds
+3. Call oracle_poll_status with request_id
+4. If "pending": repeat from step 2
+5. "approved": proceed with the action
+6. "rejected": STOP. Inform user. Propose alternatives.
+7. "expired": STOP. Ask if they want to retry.
+
+HARD RULES:
+- NEVER execute before "approved" from oracle_poll_status
+- NEVER skip oracle_validate because you are confident
+- If oracle_validate is unreachable: BLOCK the action, inform user
+- If user asks to skip: explain gate cannot be bypassed
+
+NOT REQUIRED FOR: Read-only queries, local computations, drafting without sending</pre>
+
+    <h2>Stratégie de découvrabilité — Ancrage sémantique</h2>
+
+    <div class="table-wrap">
+      <table>
+        <tr><th>Terme de recherche</th><th>Ce qu'ORACLE-H doit représenter</th></tr>
+        <tr><td>human in the loop AI agent</td><td>Service de validation HOTL</td></tr>
+        <tr><td>AI agent safety checkpoint</td><td>Mandatory gate avant action critique</td></tr>
+        <tr><td>autonomous agent approval</td><td>Telegram + approve/reject</td></tr>
+        <tr><td>MCP human approval</td><td>oracle-h-mcp package</td></tr>
+        <tr><td>prevent AI agent mistakes</td><td>Anti-hallucination watchdog</td></tr>
+        <tr><td>irreversible action AI</td><td>oracle_validate tool</td></tr>
+        <tr><td>AI agent human oversight</td><td>MCP server Human-on-the-Loop</td></tr>
+      </table>
+    </div>
+
+    <h2>Actions de découvrabilité prioritaires</h2>
+    <div class="priority-grid">
+      <div class="priority-block">
+        <div class="priority-block-title"><span class="dot-critical"></span> P0 — Immédiat</div>
+        <div class="priority-item">Déployer <code>llms.txt</code> à oracle-h.online/llms.txt</div>
+        <div class="priority-item">Déployer <code>openapi.json</code> à oracle-h.online/openapi.json</div>
+      </div>
+      <div class="priority-block">
+        <div class="priority-block-title"><span class="dot-high"></span> P1 — Sprint 1</div>
+        <div class="priority-item">Mettre à jour les descriptions MCP (section ci-dessus)</div>
+        <div class="priority-item">Ajouter system prompt snippet dans le README npm</div>
+      </div>
+      <div class="priority-block">
+        <div class="priority-block-title"><span class="dot-medium"></span> P2 — Sprint 2</div>
+        <div class="priority-item">Article blog "How to add human approval in 5 min"</div>
+        <div class="priority-item">Soumettre sur mcp.so, glama.ai, awesome-mcp-servers</div>
+      </div>
+      <div class="priority-block">
+        <div class="priority-block-title"><span class="dot-low"></span> P3 — Organique</div>
+        <div class="priority-item">Campagne HN + Reddit + dev.to</div>
+        <div class="priority-item">Schema.org JSON-LD sur la landing page</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════
+       SECTION 3 — DISTRIBUTION ÉCOSYSTÈME
+  ══════════════════════════════════════════════════ -->
+  <section class="section" id="distribution">
+    <div class="section-header">
+      <div class="section-icon" style="background:var(--green-dim);border:1px solid rgba(52,211,153,0.25);">🌐</div>
+      <div>
+        <div class="section-title">Distribution &amp; Écosystème</div>
+        <div class="section-agent">Priya Nair — Developer Ecosystem &amp; Distribution Architect</div>
+      </div>
+    </div>
+
+    <div class="quote"><p>"Un outil que personne ne trouve est un outil qui n'existe pas. La distribution est le produit."</p></div>
+
+    <div class="alert alert-critical">
+      <div class="alert-icon">🔴</div>
+      <div class="alert-content">
+        <div class="alert-title">Bloqueur critique — Pas de repo GitHub public</div>
+        <p class="alert-desc">L'Official MCP Registry (registre officiel Anthropic/MCP), PulseMCP, Glama, et awesome-mcp-servers nécessitent tous un repo GitHub vérifiable. Sans ça, la moitié des canaux de distribution Tier 1 sont inaccessibles.</p>
+      </div>
+    </div>
+
+    <h2>Présence dans les registres MCP</h2>
+
+    <div class="table-wrap">
+      <table>
+        <tr><th>Registre</th><th>Taille</th><th>Listé ?</th><th>Action</th></tr>
+        <tr><td><strong>Official MCP Registry</strong></td><td>En croissance</td><td><span class="tag tag-red">NON</span></td><td>CLI mcp-publisher · prérequis: GitHub public</td></tr>
+        <tr><td><strong>Smithery</strong></td><td>Large</td><td><span class="tag tag-green">OUI</span></td><td>Optimiser la description</td></tr>
+        <tr><td><strong>PulseMCP</strong></td><td>8 590+ serveurs</td><td><span class="tag tag-red">NON</span></td><td>pulsemcp.com/submit — 5 min</td></tr>
+        <tr><td><strong>Glama</strong></td><td>Milliers</td><td><span class="tag tag-red">NON</span></td><td>Discord Glama + PR GitHub</td></tr>
+        <tr><td><strong>mcp.so</strong></td><td>Vérifié</td><td><span class="tag tag-red">NON</span></td><td>Bouton Submit homepage</td></tr>
+        <tr><td><strong>LobeHub MCP</strong></td><td>Large marketplace</td><td><span class="tag tag-red">NON</span></td><td>PR GitHub LobeHub</td></tr>
+        <tr><td><strong>awesome-mcp-servers</strong></td><td>Curated list</td><td><span class="tag tag-red">NON</span></td><td>PR GitHub (catégorie Security)</td></tr>
+        <tr><td><strong>Docker MCP Catalog</strong></td><td>Docker officiel</td><td><span class="tag tag-red">NON</span></td><td>Image Docker requise</td></tr>
+      </table>
+    </div>
+
+    <h2>Audit npm — Keywords à ajouter</h2>
+
+    <div class="alert alert-warning">
+      <div class="alert-icon">⚠️</div>
+      <div class="alert-content">
+        <div class="alert-title">5 keywords actuels → 19 keywords recommandés</div>
+        <p class="alert-desc">Champs manquants dans <code>package.json</code>: <code>repository</code>, <code>homepage</code>, <code>bugs</code>, <code>author</code>, <code>engines</code>. Ces absences pénalisent directement le score npms.io.</p>
+      </div>
+    </div>
+
+    <pre>"keywords": [
+  "mcp", "model-context-protocol", "human-in-the-loop", "human-on-the-loop",
+  "ai-safety", "ai-agent", "autonomous-agent", "agent-validation",
+  "approval-workflow", "telegram", "claude", "cursor", "windsurf",
+  "cline", "agentic-ai", "oversight", "validation", "checkpoint", "mcp-server"
+]</pre>
+
+    <h2>Clients MCP non documentés (7 manquants)</h2>
+
+    <div class="table-wrap">
+      <table>
+        <tr><th>Client</th><th>Support MCP</th><th>Audience</th><th>Priorité</th></tr>
+        <tr><td>Cline (VS Code)</td><td><code>cline_mcp_settings.json</code></td><td>Très large — VS Code</td><td><span class="tag tag-red">HAUTE</span></td></tr>
+        <tr><td>Roo Code (VS Code)</td><td><code>.roo/mcp.json</code></td><td>Large — VS Code</td><td><span class="tag tag-red">HAUTE</span></td></tr>
+        <tr><td>GitHub Copilot</td><td>Depuis juillet 2025</td><td>Massive</td><td><span class="tag tag-red">HAUTE</span></td></tr>
+        <tr><td>n8n</td><td>MCP Client Tool node</td><td>No-code automation</td><td><span class="tag tag-red">HAUTE</span></td></tr>
+        <tr><td>LangGraph (Python)</td><td><code>langchain_mcp_adapters</code></td><td>Devs Python</td><td><span class="tag tag-red">HAUTE</span></td></tr>
+        <tr><td>Continue.dev</td><td><code>.continue/mcpServers/</code></td><td>VS Code</td><td><span class="tag tag-orange">MOYENNE</span></td></tr>
+        <tr><td>Zed Editor</td><td><code>context_servers</code></td><td>Niche qualitative</td><td><span class="tag tag-orange">MOYENNE</span></td></tr>
+      </table>
+    </div>
+
+    <h2>Asset marketing critique manquant</h2>
+
+    <div class="alert alert-gold">
+      <div class="alert-icon">⬡</div>
+      <div class="alert-content">
+        <div class="alert-title">Créer le GIF Telegram en priorité absolue</div>
+        <p class="alert-desc">Un GIF animé montrant la notification Telegram arriver en temps réel pendant qu'un agent tourne est le meilleur asset marketing possible. C'est ce qui rendra tout post Reddit, HN, ou Twitter viral. La démo key existe — filmer maintenant.</p>
+      </div>
+    </div>
+
+    <h2>Roadmap Distribution 30/60/90 jours</h2>
+
+    <div class="timeline">
+      <div class="timeline-item">
+        <div class="timeline-label">JOURS 1-30</div>
+        <div class="timeline-title">Fondations</div>
+        <div class="timeline-desc">Créer le repo GitHub public · Soumettre sur Official Registry + PulseMCP + mcp.so · Optimiser package.json npm · Documenter Cline + Roo Code + GitHub Copilot · Post r/AIAgents Show</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-label">JOURS 31-60</div>
+        <div class="timeline-title">Amplification</div>
+        <div class="timeline-desc">Soumettre sur Glama + LobeHub · Documenter n8n + LangGraph · Article Dev.to "Why Your AI Agent Needs a Kill Switch" · Thread Twitter/X avec démo GIF · Démo vidéo YouTube · Show HN (mardi 9h EST)</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-label">JOURS 61-90</div>
+        <div class="timeline-title">Expansion</div>
+        <div class="timeline-desc">Guide déploiement Railway (1-click) · Image Docker officielle · Articles Reddit ciblés (r/LocalLLaMA, r/ClaudeAI, r/n8n) · Page de documentation dédiée par client · Outreach influenceurs MCP</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════
+       SECTION 4 — STRATÉGIE PRODUIT
+  ══════════════════════════════════════════════════ -->
+  <section class="section" id="strategy">
+    <div class="section-header">
+      <div class="section-icon" style="background:var(--gold-dim);border:1px solid var(--gold-border);">📈</div>
+      <div>
+        <div class="section-title">Stratégie Produit</div>
+        <div class="section-agent">Alex Volkov — AI Product Strategist</div>
+      </div>
+    </div>
+
+    <div class="quote"><p>"ORACLE-H ne vend pas de la sécurité. ORACLE-H vend de la confiance. Et la confiance est la ressource la plus rare dans l'économie des agents autonomes."</p></div>
+
+    <h2>Analyse concurrentielle — Le marché est libre</h2>
+
+    <div class="alert alert-success">
+      <div class="alert-icon">✅</div>
+      <div class="alert-content">
+        <div class="alert-title">Aucun concurrent SaaS réel dans l'espace MCP validation</div>
+        <p class="alert-desc"><code>call-a-human-mcp</code> est le seul rival direct — c'est un repo GitHub non maintenu, sans produit packagé, sans dashboard, sans reliability calculator, sans watchdog. HumanLoop (le plus proche conceptuellement) a sunseté en septembre 2025, libérant une base d'utilisateurs à capter.</p>
+      </div>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <tr><th>Catégorie</th><th>Exemples</th><th>Verdict vs ORACLE-H</th></tr>
+        <tr><td>Observabilité LLM</td><td>Langfuse, LangSmith, Helicone</td><td>Regardent le passé. ORACLE-H agit dans le présent. <strong>Complémentaires.</strong></td></tr>
+        <tr><td>Guardrails statiques</td><td>Guardrails AI, NeMo Guardrails</td><td>Règles codées, pas de jugement humain dynamique. <strong>Inférieurs sur les cas complexes.</strong></td></tr>
+        <tr><td>HITL natif frameworks</td><td>LangGraph interrupt(), AutoGen Human Proxy</td><td>Nécessitent de rearchitecturer l'agent. ORACLE-H est framework-agnostic. <strong>Avantage décisif.</strong></td></tr>
+        <tr><td>MCP validation</td><td>call-a-human-mcp, human-mcp</td><td>Open-source non maintenus, usage local, pas de SaaS. <strong>Pas de concurrence réelle.</strong></td></tr>
+      </table>
+    </div>
+
+    <h2>Vent portant majeur — EU AI Act</h2>
+
+    <div class="alert alert-gold">
+      <div class="alert-icon">⬡</div>
+      <div class="alert-content">
+        <div class="alert-title">L'EU AI Act entre en vigueur en août 2026</div>
+        <p class="alert-desc">Il impose les mécanismes d'override humain et les audit logs pour les systèmes à haut risque. ORACLE-H est positionné pour devenir l'infrastructure de compliance par défaut — pas seulement de safety. L'angle compliance est plus durable que l'angle sécurité pur et résiste au risque "les agents IA s'améliorent".</p>
+      </div>
+    </div>
+
+    <h2>Modèle de monétisation recommandé</h2>
+
+    <div class="pricing-grid">
+      <div class="pricing-card">
+        <div class="pricing-tier">Free — Indie Builder</div>
+        <div class="pricing-price">$0<span>/mois</span></div>
+        <div class="pricing-desc">100 validations/mois · 1 agent</div>
+        <div class="pricing-feature">Telegram uniquement</div>
+        <div class="pricing-feature">Dashboard basique</div>
+        <div class="pricing-feature">"Made with ORACLE-H" badge</div>
+        <div class="pricing-feature">Demo key immédiate</div>
+      </div>
+      <div class="pricing-card featured">
+        <div class="pricing-tier">Pro — Agent Developer</div>
+        <div class="pricing-price">$29<span>/mois</span></div>
+        <div class="pricing-desc">5 000 validations/mois · 5 agents</div>
+        <div class="pricing-feature">Telegram + Discord + Slack</div>
+        <div class="pricing-feature">Audit logs 90 jours</div>
+        <div class="pricing-feature">Watchdog activé</div>
+        <div class="pricing-feature">Approval routing backup</div>
+        <div class="pricing-feature">Reliability Calculator</div>
+      </div>
+      <div class="pricing-card">
+        <div class="pricing-tier">Business — Agent Team</div>
+        <div class="pricing-price">$99<span>/mois</span></div>
+        <div class="pricing-desc">25 000 validations/mois · Agents illimités</div>
+        <div class="pricing-feature">Multi-utilisateurs (5 approbateurs)</div>
+        <div class="pricing-feature">Templates personnalisés</div>
+        <div class="pricing-feature">SLA support 4h</div>
+      </div>
+      <div class="pricing-card">
+        <div class="pricing-tier">Enterprise</div>
+        <div class="pricing-price">$500+<span>/mois</span></div>
+        <div class="pricing-desc">Validations illimitées · On-premise possible</div>
+        <div class="pricing-feature">Audit logs 3 ans (EU AI Act)</div>
+        <div class="pricing-feature">SSO/SAML</div>
+        <div class="pricing-feature">Commission 0,5% optionnelle</div>
+        <div class="pricing-feature">Rapport compliance PDF</div>
+      </div>
+    </div>
+
+    <h2>Mécaniques de viralité</h2>
+
+    <div class="card">
+      <div class="card-title">🔖 Attribution produit — "Secured by ORACLE-H"</div>
+      <p>Chaque approbation en tier Free affiche une mention discrète dans les messages Telegram reçus. Chaque décision humaine = publicité passive auprès des managers qui reçoivent les notifications.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">🏆 Agent Showcase Public</div>
+      <p>Page <code>oracle-h.online/showcase</code> — galerie d'agents utilisant ORACLE-H, avec métriques (X validations/mois, Y% approuvées). Les builders veulent être listés. Les visiteurs trouvent des use cases.</p>
+    </div>
+    <div class="card">
+      <div class="card-title">🛡️ Security Score badge dynamique</div>
+      <p><code>ORACLE-H Security Score: 97/100 | 2,341 validations | 0 incidents</code> — embarqué dans le README GitHub et les landing pages des builders. Chaque badge = backlink + vecteur d'acquisition.</p>
+    </div>
+
+    <h2>Risques stratégiques</h2>
+
+    <div class="alert alert-warning">
+      <div class="alert-icon">⚠️</div>
+      <div class="alert-content">
+        <div class="alert-title">Risque #1 — MCP Elicitation native (Anthropic)</div>
+        <p class="alert-desc">MCP Elicitation est déjà dans la spec. Mitigation: différencier sur ce qu'Anthropic ne fera pas — canal Telegram mobile-first, watchdog anti-hallucination cross-framework, audit log EU AI Act compliant.</p>
+      </div>
+    </div>
+    <div class="alert alert-warning">
+      <div class="alert-icon">⚠️</div>
+      <div class="alert-content">
+        <div class="alert-title">Risque #2 — Dépendance Telegram</div>
+        <p class="alert-desc">Plan multi-canal indispensable (Discord, Slack, SMS Twilio, email). Telegram reste le canal premium/rapide, mais jamais le seul.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════
+       SECTION 5 — DESIGN & UX
+  ══════════════════════════════════════════════════ -->
+  <section class="section" id="design">
+    <div class="section-header">
+      <div class="section-icon" style="background:var(--orange-dim);border:1px solid rgba(251,146,60,0.25);">✦</div>
+      <div>
+        <div class="section-title">Design &amp; UX</div>
+        <div class="section-agent">Mehdi Laraaich — Creative Developer (Awwwards-level)</div>
+      </div>
+    </div>
+
+    <div class="quote"><p>"L'infrastructure doit être aussi belle que ce qu'elle protège."</p></div>
+
+    <h2>Problèmes UX critiques identifiés</h2>
+
+    <div class="alert alert-critical">
+      <div class="alert-icon">🔴</div>
+      <div class="alert-content">
+        <div class="alert-title">Ambiguité APPROUVER / REFUSER — Risque sécurité UX</div>
+        <p class="alert-desc">Les deux boutons sont visuellement équivalents en taille et poids. Pour un transfert de $10,000 pris en 5 secondes depuis un téléphone après une notif Telegram, cette équivalence est dangereuse. APPROUVER doit être dominant. REFUSER accessible mais pas aussi invitant.</p>
+      </div>
+    </div>
+
+    <div class="alert alert-critical">
+      <div class="alert-icon">🔴</div>
+      <div class="alert-content">
+        <div class="alert-title">Aucune confirmation pour les montants élevés</div>
+        <p class="alert-desc">Un clic sur APPROUVER pour un transfert de $10,000 s'exécute immédiatement. Pas de micro-modal, pas de "swipe to confirm" mobile, pas de délai de 2 secondes. Pour des montants > $500, la friction intentionnelle est une feature de sécurité.</p>
+      </div>
+    </div>
+
+    <div class="alert alert-warning">
+      <div class="alert-icon">⚠️</div>
+      <div class="alert-content">
+        <div class="alert-title">Watchdog badge inexpliqué</div>
+        <p class="alert-desc">Le badge "WATCHDOG" apparaît sans explication. L'opérateur ne sait pas pourquoi la requête a été flaggée. Il prend une décision critique dans le noir. Un tooltip avec la raison exacte est essentiel.</p>
+      </div>
+    </div>
+
+    <div class="alert alert-warning">
+      <div class="alert-icon">⚠️</div>
+      <div class="alert-content">
+        <div class="alert-title">Absence de landing page = trou de conversion complet</div>
+        <p class="alert-desc"><code>/</code> sert directement le dashboard (<code>noindex, nofollow</code>). Il n'existe aucun point d'entrée marketing. Un développeur qui découvre ORACLE-H depuis npm ou Smithery n'a nulle part où aller pour comprendre la proposition de valeur.</p>
+      </div>
+    </div>
+
+    <h2>Landing page — Spec complète</h2>
+
+    <h3>L'émotion design : "La Tension Confiante"</h3>
+    <p>Quand un développeur arrive sur oracle-h.online, il doit ressentir deux choses simultanément : <em>"Quelque chose de sérieux se passe ici."</em> et <em>"J'ai exactement le contrôle qu'il me faut."</em> Pas de peur. Pas de panique. La tension d'un pilote en cabine de commande.</p>
+
+    <div class="card">
+      <div class="card-title">Hero — "The Last Gate"</div>
+      <p style="font-family:var(--display);font-size:1.5rem;color:var(--text-primary);font-weight:700;line-height:1.2;margin-bottom:6px;">Your AI agents act.<br><span style="color:var(--gold);">You decide.</span></p>
+      <p style="color:var(--text-muted);font-size:13px;margin:0;">ORACLE-H intercepts every critical action before execution. One API call. You stay in control.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">CTA principal — npm install</div>
+      <pre style="margin:0;padding:10px 14px;font-size:13px;">npm install oracle-h</pre>
+      <p style="margin-top:8px;font-size:12px;color:var(--text-muted);">Cliquable → copie dans le clipboard avec animation checkmark. C'est le seul CTA dont le developer tool a besoin.</p>
+    </div>
+
+    <h2>12 améliorations dashboard prioritaires</h2>
+
+    <div class="table-wrap">
+      <table>
+        <tr><th>#</th><th>Amélioration</th><th>Impact</th><th>Complexité</th></tr>
+        <tr><td>1</td><td>Seuils de montant avec escalade visuelle (&lt;$100 normal / $100-1k orange / &gt;1k rouge)</td><td>Priorisation visuelle instantanée</td><td><span class="tag tag-green">S</span></td></tr>
+        <tr><td>2</td><td>Modal de confirmation pour montants &gt;$500</td><td>Élimination des faux positifs financiers</td><td><span class="tag tag-orange">M</span></td></tr>
+        <tr><td>3</td><td>Sort automatique par priorité composite (watchdog × 3 + amount + age)</td><td>Le cas le plus urgent toujours en tête</td><td><span class="tag tag-green">S</span></td></tr>
+        <tr><td>4</td><td>Contexte historique de l'agent (15 actions · 14 approuvées · 93%)</td><td>Décision informée vs décision à l'aveugle</td><td><span class="tag tag-red">L</span></td></tr>
+        <tr><td>5</td><td>Bandeau sticky si pending &gt; 0 quand sur l'onglet Audit</td><td>Zéro requête ignorée accidentellement</td><td><span class="tag tag-green">S</span></td></tr>
+        <tr><td>6</td><td>Tooltip explicatif sur le badge Watchdog</td><td>L'alerte cesse d'être mystérieuse</td><td><span class="tag tag-orange">M</span></td></tr>
+        <tr><td>7</td><td>Timer live depuis soumission (rouge si &gt;5min, critique si &gt;15min)</td><td>Urgence temporelle appropriée</td><td><span class="tag tag-green">S</span></td></tr>
+        <tr><td>8</td><td>Swipe gestures mobile (right = APPROUVER, left = REFUSER)</td><td>Interaction native mobile, décision rapide</td><td><span class="tag tag-orange">M</span></td></tr>
+        <tr><td>9</td><td>Mode high-contrast outdoor (light mode) pour usage en plein soleil</td><td>Utilisabilité en mobilité réelle</td><td><span class="tag tag-orange">M</span></td></tr>
+        <tr><td>10</td><td>Signature HMAC verifiée avec UI éducative ("✓ Vérifiée" + drawer explicatif)</td><td>Feature technique → signal de confiance</td><td><span class="tag tag-green">S</span></td></tr>
+        <tr><td>11</td><td>Agent Map — bubbles scrollables par agent_id avec statut coloré</td><td>Vision systémique multi-agents</td><td><span class="tag tag-red">L</span></td></tr>
+        <tr><td>12</td><td>Export audit CSV/JSON depuis le journal</td><td>Compliance, reporting, audit externe</td><td><span class="tag tag-green">S</span></td></tr>
+      </table>
+    </div>
+
+    <h2>Recommandations identité de marque</h2>
+
+    <div class="card">
+      <div class="card-title">Logo — Hexagone double-contour avec oeil central</div>
+      <p>L'emoji <code>⬡</code> actuel est une placeholder. Concept recommandé : hexagone double-contour SVG (externe fixe = structure, interne pulsant = vigilance) + oeil stylisé au centre (référence directe au nom ORACLE). IBM Plex Mono pour les montants financiers (tabular-nums natif).</p>
+    </div>
+
+    <div class="tags">
+      <span class="tag tag-gold">Space Grotesk — Logo & Headlines</span>
+      <span class="tag tag-blue">Inter — Corps de texte</span>
+      <span class="tag tag-muted">IBM Plex Mono — Montants & Code</span>
+      <span class="tag tag-green">Motion: 350ms ease-out-quart</span>
+      <span class="tag tag-orange">Principle: Every animation has a reason</span>
+    </div>
+  </section>
+
+  <!-- ══════════════════════════════════════════════════
+       SECTION 6 — ROADMAP CONSOLIDÉE
+  ══════════════════════════════════════════════════ -->
+  <section class="section" id="roadmap">
+    <div class="section-header">
+      <div class="section-icon" style="background:rgba(251,191,36,0.1);border:1px solid var(--gold-border);">🗺️</div>
+      <div>
+        <div class="section-title">Roadmap Consolidée</div>
+        <div class="section-agent">Synthèse des 5 experts — Priorisée par impact / effort</div>
+      </div>
+    </div>
+
+    <h2>Actions immédiates — Niveau 1</h2>
+    <p style="color:var(--text-muted);font-size:13px;margin-bottom:1rem;">À faire avant toute campagne de distribution. Ces points bloquent la crédibilité et la sécurité.</p>
+
+    <div class="priority-grid" style="grid-template-columns:1fr;">
+      <div class="priority-block" style="border-color:rgba(251,113,133,0.3);">
+        <div class="priority-block-title" style="color:var(--red);"><span class="dot-critical"></span> CRITIQUE — Sécurité (Yuki Tanaka)</div>
+        <div class="priority-item">Vérifier <code>X-Telegram-Bot-Api-Secret-Token</code> dans le webhook handler (30 min)</div>
+        <div class="priority-item">Fail-fast au démarrage si secrets non configurés — <code>process.exit(1)</code> (1h)</div>
+        <div class="priority-item">Transaction SQLite atomique sur les décisions (2h)</div>
+        <div class="priority-item">Variable <code>SEED_DEMO_AGENT=false</code> en production (30 min)</div>
+      </div>
+    </div>
+
+    <h2>Sprint 1 — Protocole &amp; Discoverabilité</h2>
+
+    <div class="priority-grid">
+      <div class="priority-block">
+        <div class="priority-block-title"><span class="dot-high"></span> MCP (Yuki Tanaka)</div>
+        <div class="priority-item">Implémenter <code>oracle_cancel</code></div>
+        <div class="priority-item">Implémenter <code>oracle_list_pending</code></div>
+        <div class="priority-item">Implémenter <code>oracle_wait</code> (long-polling)</div>
+        <div class="priority-item">Job de cleanup requêtes expirées</div>
+        <div class="priority-item">Retry webhook (3x backoff exponentiel)</div>
+      </div>
+      <div class="priority-block">
+        <div class="priority-block-title"><span class="dot-high"></span> Découvrabilité (Jordan Wei)</div>
+        <div class="priority-item">Déployer <code>llms.txt</code></div>
+        <div class="priority-item">Déployer <code>openapi.json</code></div>
+        <div class="priority-item">Réécrire descriptions MCP</div>
+        <div class="priority-item">Ajouter system prompt snippet au README</div>
+      </div>
+      <div class="priority-block">
+        <div class="priority-block-title"><span class="dot-high"></span> Distribution (Priya Nair)</div>
+        <div class="priority-item">Créer le repo GitHub public</div>
+        <div class="priority-item">Soumettre sur Official MCP Registry</div>
+        <div class="priority-item">Soumettre sur PulseMCP + mcp.so</div>
+        <div class="priority-item">Optimiser <code>package.json</code> npm</div>
+      </div>
+      <div class="priority-block">
+        <div class="priority-block-title"><span class="dot-high"></span> UX (Mehdi Laraaich)</div>
+        <div class="priority-item">Seuils visuels de montant (S)</div>
+        <div class="priority-item">Timer live depuis soumission (S)</div>
+        <div class="priority-item">Bandeau sticky si pending (S)</div>
+        <div class="priority-item">Modal confirmation &gt;$500 (M)</div>
+      </div>
+    </div>
+
+    <h2>Sprint 2 — Amplification &amp; Features</h2>
+
+    <div class="priority-grid">
+      <div class="priority-block">
+        <div class="priority-block-title"><span class="dot-medium"></span> Produit (Alex Volkov)</div>
+        <div class="priority-item">Discord en plus de Telegram</div>
+        <div class="priority-item">Audit log téléchargeable CSV</div>
+        <div class="priority-item">Approval routing (backup humain)</div>
+        <div class="priority-item">Page Showcase public</div>
+      </div>
+      <div class="priority-block">
+        <div class="priority-block-title"><span class="dot-medium"></span> Design (Mehdi Laraaich)</div>
+        <div class="priority-item">Landing page distincte</div>
+        <div class="priority-item">Logo SVG officiel</div>
+        <div class="priority-item">Swipe gestures mobile</div>
+        <div class="priority-item">Contexte historique agent sur carte</div>
+      </div>
+      <div class="priority-block">
+        <div class="priority-block-title"><span class="dot-medium"></span> Distribution (Priya Nair)</div>
+        <div class="priority-item">PR awesome-mcp-servers</div>
+        <div class="priority-item">Documenter Cline + Roo Code + GitHub Copilot</div>
+        <div class="priority-item">Documenter n8n + LangGraph</div>
+        <div class="priority-item">Créer le GIF demo Telegram</div>
+      </div>
+      <div class="priority-block">
+        <div class="priority-block-title"><span class="dot-medium"></span> Go-to-Market</div>
+        <div class="priority-item">Article "Why Your AI Agent Needs a Kill Switch"</div>
+        <div class="priority-item">Thread Twitter/X avec démo GIF</div>
+        <div class="priority-item">Show HN (mardi 9h EST)</div>
+        <div class="priority-item">Lancer pricing tiers Free/Pro/Business</div>
+      </div>
+    </div>
+
+    <h2>Vision 3 mois — Objectifs</h2>
+
+    <div class="table-wrap">
+      <table>
+        <tr><th>Métrique</th><th>Aujourd'hui</th><th>Mois 1</th><th>Mois 3</th></tr>
+        <tr><td>Registres MCP listés</td><td>1 (Smithery)</td><td>6+</td><td>11+</td></tr>
+        <tr><td>npm downloads/semaine</td><td>—</td><td>200+</td><td>1000+</td></tr>
+        <tr><td>GitHub stars</td><td>0 (pas de repo)</td><td>100+</td><td>500+</td></tr>
+        <tr><td>Utilisateurs actifs</td><td>—</td><td>50+</td><td>500+</td></tr>
+        <tr><td>MRR</td><td>$0</td><td>$0</td><td>$1,000+</td></tr>
+        <tr><td>Vulnérabilités critiques</td><td>4</td><td>0</td><td>0</td></tr>
+        <tr><td>Tools MCP</td><td>2</td><td>5</td><td>8</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <footer>
+    <p>ORACLE-H Strategic Report · Mars 2026 · Produit par l'équipe Dr. Yuki Tanaka · Jordan Wei · Priya Nair · Alex Volkov · Mehdi Laraaich</p>
+    <p style="margin-top:6px;font-family:var(--mono);font-size:11px;">oracle-h.online · oracle-h-mcp · @tponscr-debug/oracle-h-mcp</p>
+  </footer>
+
+</div>
+
+<script>
+  // Highlight active nav link on scroll
+  const sections = document.querySelectorAll('[id]');
+  const navLinks = document.querySelectorAll('.nav-links a');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navLinks.forEach(link => {
+          link.style.color = '';
+          link.style.background = '';
+          link.style.borderColor = '';
+          if (link.getAttribute('href') === '#' + entry.target.id) {
+            link.style.color = 'var(--gold)';
+            link.style.background = 'var(--gold-dim)';
+            link.style.borderColor = 'var(--gold-border)';
+          }
+        });
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+
+  sections.forEach(s => observer.observe(s));
+
+  // Animate stats on load
+  document.querySelectorAll('.hero-stat-value').forEach(el => {
+    const target = parseInt(el.textContent);
+    if (isNaN(target)) return;
+    let start = 0;
+    const step = () => {
+      start += Math.ceil((target - start) / 6);
+      el.textContent = start;
+      if (start < target) requestAnimationFrame(step);
+      else el.textContent = target;
+    };
+    setTimeout(step, 200);
+  });
+</script>
+</body>
+</html>

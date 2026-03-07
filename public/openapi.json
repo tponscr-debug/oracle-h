@@ -1,0 +1,509 @@
+{
+    "openapi": "3.1.0",
+    "info": {
+        "title": "ORACLE-H API",
+        "description": "Human-on-the-Loop supervision infrastructure for autonomous AI agents. Agents submit actions for human validation before execution.",
+        "version": "1.0.0",
+        "contact": {
+            "name": "ORACLE-H",
+            "url": "https://oracle-h.vercel.app"
+        },
+        "license": {
+            "name": "MIT"
+        }
+    },
+    "servers": [
+        {
+            "url": "http://localhost:3000",
+            "description": "Local development"
+        }
+    ],
+    "paths": {
+        "/api/v1/validate": {
+            "post": {
+                "operationId": "validateAction",
+                "summary": "Submit an agent action for human validation",
+                "description": "The primary endpoint for autonomous agents. Submits a proposed action for human review. The Watchdog automatically checks for context truncation. Returns reliability improvement metrics.",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/ValidateRequest"
+                            },
+                            "example": {
+                                "action": "Execute USDC transfer of $500 from wallet 0xABC to 0xDEF via Uniswap v3",
+                                "rationale": "Fastest settlement route with lowest gas fees. Price impact < 0.1%. Slippage tolerance 0.5%.",
+                                "projected_impact": "Risk: permanent loss of $500 USDC if destination address is incorrect. Affects 3 downstream settlement steps.",
+                                "financial_amount": 500,
+                                "callback_url": "https://myagent.example.com/webhook/oracle",
+                                "workflow_steps": 4,
+                                "expires_in_seconds": 300
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "202": {
+                        "description": "Action submitted for human validation",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/ValidateResponse"
+                                }
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid payload or Watchdog triggered",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/WatchdogError"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Agent not registered"
+                    }
+                }
+            }
+        },
+        "/api/v1/status/{request_id}": {
+            "get": {
+                "operationId": "getRequestStatus",
+                "summary": "Check status of a validation request via polling",
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ],
+                "parameters": [
+                    {
+                        "name": "request_id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Returns current status"
+                    }
+                }
+            }
+        },
+        "/api/v1/decide": {
+            "post": {
+                "operationId": "decideAction",
+                "summary": "Approve or reject a pending validation request",
+                "description": "Called by the human dashboard. Updates request status, logs the decision to the audit trail, and dispatches a signed webhook to the agent.",
+                "security": [
+                    {
+                        "adminSecret": []
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/DecideRequest"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Decision recorded and webhook dispatched",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/DecideResponse"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Missing or invalid admin secret"
+                    },
+                    "404": {
+                        "description": "Request not found"
+                    },
+                    "409": {
+                        "description": "Request already decided"
+                    }
+                }
+            }
+        },
+        "/api/v1/requests": {
+            "get": {
+                "operationId": "listRequests",
+                "summary": "List validation requests",
+                "parameters": [
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "pending",
+                                "approved",
+                                "rejected",
+                                "all"
+                            ]
+                        },
+                        "description": "Filter by status (default: all)"
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "schema": {
+                            "type": "integer",
+                            "default": 50,
+                            "maximum": 100
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "List of requests with join to decisions",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "requests": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/components/schemas/RequestRecord"
+                                            }
+                                        },
+                                        "total": {
+                                            "type": "integer"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/health": {
+            "get": {
+                "operationId": "healthCheck",
+                "summary": "Service health check",
+                "responses": {
+                    "200": {
+                        "description": "Service is operational",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "object",
+                                    "properties": {
+                                        "status": {
+                                            "type": "string",
+                                            "enum": [
+                                                "operational",
+                                                "degraded"
+                                            ]
+                                        },
+                                        "service": {
+                                            "type": "string"
+                                        },
+                                        "version": {
+                                            "type": "string"
+                                        },
+                                        "timestamp": {
+                                            "type": "string",
+                                            "format": "date-time"
+                                        },
+                                        "database": {
+                                            "type": "string"
+                                        },
+                                        "pending_requests": {
+                                            "type": "integer"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "adminSecret": {
+                "type": "apiKey",
+                "in": "header",
+                "name": "X-Oracle-Admin-Secret",
+                "description": "ORACLE_ADMIN_SECRET env variable"
+            },
+            "bearerAuth": {
+                "type": "http",
+                "scheme": "bearer",
+                "description": "Agent signature key"
+            }
+        },
+        "schemas": {
+            "ValidateRequest": {
+                "type": "object",
+                "required": [
+                    "action",
+                    "rationale",
+                    "projected_impact",
+                    "financial_amount"
+                ],
+                "properties": {
+                    "agent_id": {
+                        "type": "string",
+                        "description": "Registered agent ID"
+                    },
+                    "action": {
+                        "type": "string",
+                        "minLength": 15,
+                        "description": "Technical task description"
+                    },
+                    "rationale": {
+                        "type": "string",
+                        "minLength": 15,
+                        "description": "Why this is the optimal path"
+                    },
+                    "projected_impact": {
+                        "type": "string",
+                        "minLength": 15,
+                        "description": "Risk/impact if action fails. Must contain risk keywords."
+                    },
+                    "financial_amount": {
+                        "type": "number",
+                        "minimum": 0,
+                        "description": "Amount at stake in USD"
+                    },
+                    "callback_url": {
+                        "type": "string",
+                        "format": "uri",
+                        "description": "Webhook URL to receive decision"
+                    },
+                    "workflow_steps": {
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 100,
+                        "default": 4
+                    },
+                    "expires_in_seconds": {
+                        "type": "integer",
+                        "minimum": 30,
+                        "description": "TTL timeout for human decision"
+                    }
+                }
+            },
+            "ValidateResponse": {
+                "type": "object",
+                "properties": {
+                    "oracle_version": {
+                        "type": "string"
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "pending"
+                        ]
+                    },
+                    "request_id": {
+                        "type": "string"
+                    },
+                    "agent": {
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "type": "string"
+                            },
+                            "name": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "dashboard_url": {
+                        "type": "string",
+                        "format": "uri"
+                    },
+                    "reliability": {
+                        "type": "object",
+                        "properties": {
+                            "p_before": {
+                                "type": "number"
+                            },
+                            "p_after": {
+                                "type": "number"
+                            },
+                            "gain": {
+                                "type": "number"
+                            },
+                            "summary": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "message": {
+                        "type": "string"
+                    },
+                    "expires_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "watchdog": {
+                        "type": "object",
+                        "properties": {
+                            "triggered": {
+                                "type": "boolean"
+                            }
+                        }
+                    }
+                }
+            },
+            "WatchdogError": {
+                "type": "object",
+                "properties": {
+                    "error": {
+                        "type": "string"
+                    },
+                    "watchdog_alert": {
+                        "type": "boolean"
+                    },
+                    "reasons": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "request_id": {
+                        "type": "string"
+                    },
+                    "action": {
+                        "type": "string"
+                    }
+                }
+            },
+            "DecideRequest": {
+                "type": "object",
+                "required": [
+                    "request_id",
+                    "decision"
+                ],
+                "properties": {
+                    "request_id": {
+                        "type": "string"
+                    },
+                    "decision": {
+                        "type": "string",
+                        "enum": [
+                            "approved",
+                            "rejected"
+                        ]
+                    },
+                    "decided_by": {
+                        "type": "string",
+                        "default": "human"
+                    }
+                }
+            },
+            "DecideResponse": {
+                "type": "object",
+                "properties": {
+                    "success": {
+                        "type": "boolean"
+                    },
+                    "decision_id": {
+                        "type": "string"
+                    },
+                    "request_id": {
+                        "type": "string"
+                    },
+                    "decision": {
+                        "type": "string",
+                        "enum": [
+                            "approved",
+                            "rejected"
+                        ]
+                    },
+                    "timestamp": {
+                        "type": "string",
+                        "format": "date-time"
+                    },
+                    "agent_signature": {
+                        "type": "string"
+                    },
+                    "webhook": {
+                        "type": "object",
+                        "properties": {
+                            "success": {
+                                "type": "boolean"
+                            },
+                            "status": {
+                                "type": "integer"
+                            }
+                        }
+                    }
+                }
+            },
+            "RequestRecord": {
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "type": "string"
+                    },
+                    "agent_id": {
+                        "type": "string"
+                    },
+                    "agent_name": {
+                        "type": "string"
+                    },
+                    "action": {
+                        "type": "string"
+                    },
+                    "rationale": {
+                        "type": "string"
+                    },
+                    "projected_impact": {
+                        "type": "string"
+                    },
+                    "financial_amount": {
+                        "type": "number"
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "pending",
+                            "approved",
+                            "rejected"
+                        ]
+                    },
+                    "watchdog_alert": {
+                        "type": "integer"
+                    },
+                    "p_success_before": {
+                        "type": "number"
+                    },
+                    "p_success_after": {
+                        "type": "number"
+                    },
+                    "created_at": {
+                        "type": "string",
+                        "format": "date-time"
+                    }
+                }
+            }
+        }
+    }
+}

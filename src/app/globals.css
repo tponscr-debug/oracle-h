@@ -1,0 +1,189 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── Design Tokens — Industrial Trust ──────────────────────────────────────── */
+:root {
+  --bg-primary:    #0a0f1e;
+  --bg-secondary:  #0d1526;
+  --bg-card:       #111d35;
+  --bg-card-hover: #1a2744;
+  --border:        rgba(251, 191, 36, 0.12);
+  --border-hover:  rgba(251, 191, 36, 0.35);
+  --accent:        #fbbf24;
+  --accent-dim:    rgba(251, 191, 36, 0.08);
+  --text-primary:  #f0f4ff;
+  --text-muted:    #7a8ba8;
+  --text-subtle:   #4a5c78;
+  --green:         #34d399;
+  --green-dim:     rgba(52, 211, 153, 0.1);
+  --red:           #fb7185;
+  --red-dim:       rgba(251, 113, 133, 0.1);
+  --orange:        #fb923c;
+  --orange-dim:    rgba(251, 146, 60, 0.1);
+}
+
+/* ── Base ───────────────────────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html { font-size: 16px; }
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: 'Inter', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
+}
+
+/* ── Scrollbar ──────────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--bg-primary); }
+::-webkit-scrollbar-thumb {
+  background: var(--border-hover);
+  border-radius: 3px;
+}
+
+/* ── Card ───────────────────────────────────────────────────────────────────── */
+.oracle-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  transition: all 0.2s ease;
+}
+.oracle-card:hover {
+  border-color: var(--border-hover);
+  background: var(--bg-card-hover);
+}
+
+/* ── Glow badge ─────────────────────────────────────────────────────────────── */
+.badge-pending {
+  background: var(--orange-dim);
+  color: var(--orange);
+  border: 1px solid rgba(251, 146, 60, 0.25);
+}
+.badge-approved {
+  background: var(--green-dim);
+  color: var(--green);
+  border: 1px solid rgba(52, 211, 153, 0.25);
+}
+.badge-rejected {
+  background: var(--red-dim);
+  color: var(--red);
+  border: 1px solid rgba(251, 113, 133, 0.25);
+}
+.badge-watchdog {
+  background: rgba(251, 191, 36, 0.1);
+  color: var(--accent);
+  border: 1px solid rgba(251, 191, 36, 0.3);
+}
+
+/* ── Buttons ────────────────────────────────────────────────────────────────── */
+.btn-approve {
+  background: var(--green-dim);
+  color: var(--green);
+  border: 1px solid rgba(52, 211, 153, 0.3);
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.btn-approve:hover:not(:disabled) {
+  background: rgba(52, 211, 153, 0.2);
+  border-color: var(--green);
+  box-shadow: 0 0 20px rgba(52, 211, 153, 0.15);
+  transform: translateY(-1px);
+}
+.btn-reject {
+  background: var(--red-dim);
+  color: var(--red);
+  border: 1px solid rgba(251, 113, 133, 0.3);
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+.btn-reject:hover:not(:disabled) {
+  background: rgba(251, 113, 133, 0.2);
+  border-color: var(--red);
+  box-shadow: 0 0 20px rgba(251, 113, 133, 0.15);
+  transform: translateY(-1px);
+}
+.btn-approve:disabled, .btn-reject:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ── Noise texture overlay ──────────────────────────────────────────────────── */
+.noise-overlay {
+  position: fixed;
+  inset: 0;
+  opacity: 0.025;
+  pointer-events: none;
+  z-index: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+}
+
+/* ── Grid background ────────────────────────────────────────────────────────── */
+.grid-bg {
+  background-image:
+    linear-gradient(rgba(251, 191, 36, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(251, 191, 36, 0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* ── Animations ─────────────────────────────────────────────────────────────── */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.3; }
+}
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.animate-fade-in { animation: fadeIn 0.35s ease-out forwards; }
+.pulse-dot        { animation: pulse-dot 2s ease-in-out infinite; }
+
+.skeleton {
+  background: linear-gradient(90deg, var(--bg-card) 25%, var(--bg-card-hover) 50%, var(--bg-card) 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 6px;
+}
+
+/* ── Status indicator ───────────────────────────────────────────────────────── */
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.status-dot.live  { background: var(--green); box-shadow: 0 0 8px var(--green); }
+.status-dot.dead  { background: var(--red); }
+
+/* ── Amount display ─────────────────────────────────────────────────────────── */
+.amount-display {
+  font-family: 'Space Grotesk', monospace;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── Mobile-first breakpoints ───────────────────────────────────────────────── */
+@media (min-width: 768px) {
+  .oracle-card { border-radius: 16px; }
+}
