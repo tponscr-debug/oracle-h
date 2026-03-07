@@ -23,16 +23,26 @@ const server = new McpServer({
 // ─────────────────────────────────────────────
 server.tool(
     "oracle_validate",
-    `Submit a critical or irreversible action to ORACLE-H for human approval.
-The human operator will receive a Telegram notification with full context and can approve or reject.
-ALWAYS use this tool before executing any destructive, financial, or irreversible operation.
-Returns a request_id to use with oracle_poll_status to retrieve the decision.`,
+    `MANDATORY HUMAN APPROVAL GATE: Call this tool BEFORE executing any action that is irreversible, destructive, or financially significant.
+
+This includes: deleting files, dropping databases, sending emails to real users, making financial transactions, deploying to production, modifying permissions, or calling third-party APIs with side effects.
+
+USE THIS TOOL WHEN:
+- Action cannot be undone (file deletion, DB drop, git force-push, data wipe)
+- Action has financial implications (payments, purchases, billing changes)
+- Action affects real users or external systems (emails, API write calls)
+- Action modifies infrastructure (server config, DNS, deployments, permissions)
+- Action scope exceeds what was explicitly authorized in the current session
+
+DO NOT USE FOR: Read-only operations, local sandboxed operations, actions explicitly pre-approved in system prompt.
+
+Returns a request_id. Call oracle_poll_status every 10-15 seconds until "approved" or "rejected". DO NOT proceed until terminal status. If unreachable, treat as BLOCKED.`,
     {
-        action: z.string().min(15).describe("Precise technical description of the action you are about to execute"),
-        rationale: z.string().min(15).describe("Why this action is necessary and why it is the optimal path"),
-        projected_impact: z.string().min(15).describe("Risk and impact if this action fails or is wrong. Must describe potential damage."),
-        financial_amount: z.number().min(0).default(0).describe("Financial amount at stake in USD (0 if none)"),
-        expires_in_seconds: z.number().min(30).default(300).describe("How long to wait for the human response before timing out (default: 5 minutes)"),
+        action: z.string().min(15).describe("Precise technical description of the exact action about to be executed. Include the target (file path, database name, API endpoint), the operation type, and scope. Example: 'DROP TABLE users in production PostgreSQL database prod-db-01'"),
+        rationale: z.string().min(15).describe("Why this action is necessary to accomplish the goal, and why this specific approach was chosen over safer alternatives. Be honest about uncertainty."),
+        projected_impact: z.string().min(15).describe("Concrete description of what goes wrong if this action fails or is incorrect. Include: data loss risk, affected users/systems, recovery difficulty. Example: 'Permanent deletion of 50,000 user records. No backup available. Unrecoverable.'"),
+        financial_amount: z.number().min(0).default(0).describe("Total financial amount at stake in USD. Set to 0 if no financial impact. Include transaction amount or potential cost of mistakes."),
+        expires_in_seconds: z.number().min(30).default(300).describe("Seconds to wait for human response. Use 60-120 for urgent real-time workflows. Use 300-600 for async tasks. If expired without decision, treat as rejected and abort."),
     },
     async ({ action, rationale, projected_impact, financial_amount, expires_in_seconds }) => {
         try {
@@ -99,11 +109,20 @@ Returns a request_id to use with oracle_poll_status to retrieve the decision.`,
 // ────────────────────────────────────────────────────
 server.tool(
     "oracle_poll_status",
-    `Check the current status of a validation request previously submitted via oracle_validate.
-Poll every 10-15 seconds until status is "approved" or "rejected".
-If "expired", the human did not respond in time — abort the action.`,
+    `POLLING PROTOCOL (mandatory): Check the human decision for a request submitted via oracle_validate.
+
+1. Call this with the request_id from oracle_validate
+2. If status is "pending": wait 10-15 seconds, then call again
+3. Repeat until status is "approved" OR "rejected" OR "expired"
+4. NEVER proceed with the action while status is "pending"
+
+DECISION RULES (non-negotiable):
+- "approved" → Human confirmed. You may now execute the action.
+- "rejected" → Human denied. DO NOT execute. Inform the user and stop.
+- "expired"  → No response in time. Treat as rejected. DO NOT execute.
+- "pending"  → Still waiting. Poll again in 10-15 seconds.`,
     {
-        request_id: z.string().describe("The request_id returned by oracle_validate"),
+        request_id: z.string().describe("The unique request_id string returned by oracle_validate. Copy it exactly from the oracle_validate response."),
     },
     async ({ request_id }) => {
         try {

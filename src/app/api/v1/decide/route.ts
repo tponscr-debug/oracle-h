@@ -84,19 +84,31 @@ export async function POST(req: NextRequest) {
         .update(`${request_id}.${decision}.${timestamp}`)
         .digest("hex");
 
-    // Update request status
-    db.prepare(`
-    UPDATE validation_requests
-    SET status = ?, updated_at = ?
-    WHERE id = ?
-  `).run(decision, timestamp, request_id);
-
-    // Log decision (audit trail)
+    // Atomic transaction — prevents race condition with Telegram webhook
     const decisionId = `dec_${nanoid(12)}`;
-    db.prepare(`
-    INSERT INTO decisions (id, request_id, decision, decided_by, agent_signature, webhook_sent)
-    VALUES (?, ?, ?, ?, ?, 0)
-  `).run(decisionId, request_id, decision, decided_by, agentSignature);
+    const commitDecision = db.transaction(() => {
+        const result = db.prepare(`
+      UPDATE validation_requests
+      SET status = ?, updated_at = ?
+      WHERE id = ? AND status = 'pending'
+    `).run(decision, timestamp, request_id);
+
+        if (result.changes === 0) return false;
+
+        db.prepare(`
+      INSERT INTO decisions (id, request_id, decision, decided_by, agent_signature, webhook_sent)
+      VALUES (?, ?, ?, ?, ?, 0)
+    `).run(decisionId, request_id, decision, decided_by, agentSignature);
+
+        return true;
+    });
+
+    if (!commitDecision()) {
+        return NextResponse.json(
+            { error: `Requête déjà traitée (conflit concurrent)` },
+            { status: 409 }
+        );
+    }
 
     // Dispatch webhook to agent
     const webhookPayload = {

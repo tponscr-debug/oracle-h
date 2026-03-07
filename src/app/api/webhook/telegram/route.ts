@@ -11,6 +11,12 @@ import { dispatchWebhook } from "@/lib/webhook";
 
 export async function POST(req: NextRequest) {
     try {
+        // Verify Telegram webhook signature (prevents forged approval requests)
+        const telegramSecret = req.headers.get("x-telegram-bot-api-secret-token");
+        if (!telegramSecret || telegramSecret !== process.env.TELEGRAM_WEBHOOK_SECRET) {
+            return NextResponse.json({ ok: false }, { status: 401 });
+        }
+
         const body = await req.json();
 
         // On ne gère que les callback_queries (clics boutons)
@@ -63,24 +69,31 @@ export async function POST(req: NextRequest) {
             .update(`${requestId}.${decision}.${timestamp}`)
             .digest("hex");
 
-        const updateStmt = db.prepare(`
-            UPDATE validation_requests
-            SET status = ?, updated_at = ?
-            WHERE id = ? AND status = 'pending'
-        `);
+        const decisionId = `dec_${require("nanoid").nanoid(12)}`;
 
-        const result = updateStmt.run(decision, timestamp, requestId);
+        // Atomic transaction to prevent race conditions with dashboard
+        const commitDecision = db.transaction(() => {
+            const result = db.prepare(`
+                UPDATE validation_requests
+                SET status = ?, updated_at = ?
+                WHERE id = ? AND status = 'pending'
+            `).run(decision, timestamp, requestId);
 
-        if (result.changes === 0) {
+            if (result.changes === 0) return false;
+
+            db.prepare(`
+                INSERT INTO decisions (id, request_id, decision, decided_by, agent_signature, webhook_sent)
+                VALUES (?, ?, ?, ?, ?, 0)
+            `).run(decisionId, requestId, decision, "telegram_admin", agentSignature);
+
+            return true;
+        });
+
+        const committed = commitDecision();
+        if (!committed) {
             await answerCallback(callbackQuery.id, "Conflit : requête déjà modifiée", true);
             return NextResponse.json({ ok: true });
         }
-
-        const decisionId = `dec_${require("nanoid").nanoid(12)}`;
-        db.prepare(`
-            INSERT INTO decisions (id, request_id, decision, decided_by, agent_signature, webhook_sent)
-            VALUES (?, ?, ?, ?, ?, 0)
-        `).run(decisionId, requestId, decision, "telegram_admin", agentSignature);
 
         // Notifier Dashboard SSE
         notifyClients({ type: "decision_made", requestId, decision });

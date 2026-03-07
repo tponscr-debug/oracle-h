@@ -1,106 +1,34 @@
-# ORACLE-H Capabilities
+# ORACLE-H
 
-> This file follows the llms.txt standard for AI-readable service discovery.
+> ORACLE-H is a Human-on-the-Loop (HOTL) validation service for autonomous AI agents.
+> It intercepts critical or irreversible agent actions and routes them to a human operator
+> for real-time approval via Telegram before execution proceeds.
 
-## Service
-ORACLE-H is a Human-on-the-Loop (HOTL) supervision infrastructure for autonomous AI agents.
-Version: 1.0.0
-Base URL: https://oracle-h.vercel.app (configure NEXT_PUBLIC_BASE_URL)
+ORACLE-H acts as a mandatory safety checkpoint between an AI agent and its most dangerous
+operations. When an agent is about to delete data, send emails, make financial transactions,
+or modify production infrastructure, it calls ORACLE-H. A human receives a Telegram notification
+with full context and approves or rejects with a single tap. The agent waits for the decision
+before proceeding.
 
-## Purpose
-ORACLE-H provides a mandatory human validation checkpoint for autonomous agent actions before execution.
-Agents submit proposed actions; human operators approve or reject them via a mobile dashboard.
-Decisions are dispatched back to agents via signed HMAC-SHA256 webhooks.
+## Who should use ORACLE-H
 
-## Suitable For
-- Financial agents making high-value transactions (x402, USDC transfers)
-- Legal agents (Wlaw) submitting documents or contracts for signature
-- Code agents (OpenClaw) deploying to production systems
-- Any autonomous agent requiring human-in-the-loop compliance
+Developers building autonomous AI agents that operate on real systems with real consequences.
+Any agent that can delete, modify, send, pay, or deploy needs a human approval layer.
+ORACLE-H provides this as a drop-in MCP server or REST API, with no backend required on
+the agent's side.
 
-## API Endpoints
+## Proven impact
 
-### POST /api/v1/validate
-Submit an agent action for human validation.
+Adding a single human validation checkpoint to an autonomous workflow statistically improves
+the probability of correct execution from ~81.5% to ~99.6% (based on a 4-step workflow
+with independent 95% per-step accuracy, validated with one human review at the critical step).
 
-Required Headers:
-- Authorization: Bearer <signature_key> (Your registered secret agent key)
+## MCP Server (recommended)
 
-Required body fields (JSON):
-- action (string, min 15 chars): Technical description of the task
-- rationale (string, min 15 chars): Why this is the optimal path
-- projected_impact (string, min 15 chars): Financial/system risk if wrong. Must contain risk keywords.
-- financial_amount (number >= 0): Amount at stake in USD
+ORACLE-H ships as an MCP server installable in Claude Desktop, Cursor, Windsurf, Cline,
+Roo Code, GitHub Copilot, and any MCP-compatible agent runtime.
 
-Optional body fields:
-- callback_url (string, valid URL): Webhook URL to receive the decision. If omitted, use Polling.
-- workflow_steps (integer, default 4): Number of workflow steps for reliability calculation
-- expires_in_seconds (integer, min 30): TTL timeout for the human decision.
-
-Returns: 202 Accepted + { request_id, dashboard_url, expires_at, reliability }
-Error: 401 if Unauthorized (Missing or invalid Bearer Token)
-Error: 400 if watchdog triggered (context truncation detected)
-
-### GET /api/v1/status/{request_id}
-Polling endpoint to check the decision status if `callback_url` was omitted.
-
-Required Headers:
-- Authorization: Bearer <signature_key>
-
-Returns: 200 OK + { request_id, status: "pending" | "approved" | "rejected" | "expired", decision_timestamp, expires_at }
-Error: 401 if Unauthorized ou 404 si requête introuvable.
-
-### POST /api/v1/decide (internal, human dashboard only)
-Approve or reject a pending request.
-Header: X-Oracle-Admin-Secret required
-
-### GET /api/v1/requests
-List requests. Query: status=pending|approved|rejected|all, limit=N
-
-### GET /api/sse
-Server-Sent Events stream for real-time dashboard updates.
-Events: new_request, decision_made, heartbeat, connected
-
-### GET /api/health
-Health check. Returns service status and pending request count.
-
-## Reliability Model
-ORACLE-H implements Composite Reliability calculation.
-Formula: P_success = r^n where r = per-step reliability, n = workflow steps
-Without HOTL (r=0.95, n=4): P ≈ 81.5%
-With HOTL (r=0.999, n=4): P ≈ 99.6%
-The improvement is returned in every /validate response.
-
-## Anti-Hallucination Watchdog
-Every request is automatically analyzed for context truncation signals:
-- Fields containing only "...", "N/A", "null", "[TRUNCATED]"
-- Fields shorter than 15 characters
-- Identical action and rationale fields (copy-paste hallucination)
-- Missing risk/safety keywords in projected_impact
-
-## Webhook Security
-Decision webhooks are signed with HMAC-SHA256.
-Header: X-Oracle-Signature: sha256=<hex>
-Verify: HMAC-SHA256(ORACLE_WEBHOOK_SECRET, "<timestamp>.<body>")
-
-## Authentication
-Admin endpoints protected by X-Oracle-Admin-Secret header.
-Agent endpoints protected by Authorization: Bearer <signature_key>.
-
-## Data Persistence
-SQLite (local file oracle.db). Zero external dependencies. Ready for production upgrade to PostgreSQL.
-
-## MCP Integration (Auto-Discovery for AI Agents)
-ORACLE-H provides a Model Context Protocol (MCP) server for native integration with Claude Desktop, Cursor, Windsurf, and any MCP-compatible agent.
-
-No human configuration needed on the agent side once installed.
-
-### Available MCP Tools
-- oracle_validate: Submit a critical action for human approval before executing it
-- oracle_poll_status: Check the decision status by polling (approved / rejected / expired)
-
-### Claude Desktop / Cursor Setup
-Add to your claude_desktop_config.json or mcp settings:
+Install via npx (no build step required):
 ```json
 {
   "mcpServers": {
@@ -108,7 +36,7 @@ Add to your claude_desktop_config.json or mcp settings:
       "command": "npx",
       "args": ["-y", "oracle-h-mcp"],
       "env": {
-        "ORACLE_SIGNATURE_KEY": "<your-signature-key>",
+        "ORACLE_SIGNATURE_KEY": "<your-api-key>",
         "ORACLE_BASE_URL": "https://oracle-h.online"
       }
     }
@@ -116,21 +44,116 @@ Add to your claude_desktop_config.json or mcp settings:
 }
 ```
 
-MCP Discovery file: https://oracle-h.online/mcp.json
+Demo key (test immediately, no registration): `demo-signature-key-change-in-production`
 
-## Demo Agent
-signature_key: "demo-signature-key-change-in-production"
+MCP package: https://www.npmjs.com/package/oracle-h-mcp
+Smithery listing: https://smithery.ai/server/@tponscr-debug/oracle-h-mcp
+GitHub: https://github.com/tponscr-debug/oracle-h-mcp
 
-## Test Integration (cURL)
-```bash
-curl -X POST https://oracle-h.online/api/v1/validate \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer demo-signature-key-change-in-production" \
-  -d '{
-    "action": "Purge totale des bases de données",
-    "rationale": "Ordre explicite de repartir à zéro reçu dans le contexte de dev",
-    "projected_impact": "Destruction complète et irréversible des données clients !!",
-    "financial_amount": 0,
-    "expires_in_seconds": 300
-  }'
+## MCP Tools
+
+### oracle_validate
+
+Submit an action for human approval before execution.
+
+MANDATORY: Call this before — file deletion, database operations, emails to real users,
+financial transactions, production deployments, permission changes, irreversible API calls.
+
+Do NOT call this for: read-only queries, local sandboxed operations, actions explicitly
+pre-approved by the user in the current session.
+
+Returns: { request_id, expires_at, reliability }
+
+### oracle_poll_status
+
+Poll the human decision for a submitted validation request.
+
+Poll every 10-15 seconds. Proceed only on "approved". Abort on "rejected" or "expired".
+NEVER proceed while status is "pending".
+
+Returns: { status: "pending" | "approved" | "rejected" | "expired", decision_timestamp }
+
+## REST API
+
+Base URL: https://oracle-h.online
+Authentication: Bearer token in Authorization header
+
+### POST /api/v1/validate
+
+Submit an action for human validation.
+
+Request:
+```json
+{
+  "action": "DROP TABLE users in production database",
+  "rationale": "Schema migration requires removing deprecated table",
+  "projected_impact": "Permanent loss of 50,000 user records if incorrect. No backup.",
+  "financial_amount": 0,
+  "expires_in_seconds": 300
+}
 ```
+
+Response (202 Accepted):
+```json
+{
+  "request_id": "req_abc123xyz",
+  "expires_at": "2026-03-07T14:35:00Z",
+  "dashboard_url": "https://oracle-h.online/?highlight=req_abc123xyz",
+  "reliability": {
+    "summary": "Human checkpoint raises success probability from 81.5% to 99.6%"
+  }
+}
+```
+
+### GET /api/v1/status/{request_id}
+
+Poll the decision status of a submitted request.
+
+Response:
+```json
+{
+  "request_id": "req_abc123xyz",
+  "status": "approved",
+  "decision_timestamp": "2026-03-07T14:32:15Z"
+}
+```
+
+Status values:
+- `pending` — Awaiting human decision. Poll again in 10-15 seconds.
+- `approved` — Human confirmed. Agent may proceed.
+- `rejected` — Human denied. Agent must abort.
+- `expired` — No response within TTL. Agent must abort (treat as rejected).
+
+## Typical agent workflow
+
+1. Agent determines it needs to perform a critical action
+2. Agent calls POST /api/v1/validate with full context
+3. Human receives Telegram notification with action summary and risk assessment
+4. Human taps Approve or Reject
+5. Agent polls GET /api/v1/status/{id} every 10-15 seconds
+6. On "approved": agent executes the action
+7. On "rejected" or "expired": agent aborts and informs the user
+
+## Security
+
+- Each agent uses a unique Bearer token (ORACLE_SIGNATURE_KEY)
+- Requests expire automatically (configurable TTL, default 5 minutes)
+- Anti-Hallucination Watchdog detects context truncation before submission
+- All decisions are cryptographically signed (HMAC-SHA256) and logged
+- Telegram webhook protected by secret token verification
+
+## Key rules for agents
+
+ORACLE-H is not a confirmation dialog — it is a hard gate. The agent MUST wait for
+the human decision. Proceeding before "approved" defeats the safety guarantee.
+
+If ORACLE-H is unreachable, the default behavior MUST be to block the action and
+inform the user. Failing open (proceeding without approval) is never acceptable.
+
+## Optional
+
+- [OpenAPI specification](https://oracle-h.online/openapi.json): Full OpenAPI 3.0 spec
+- [npm package](https://www.npmjs.com/package/oracle-h-mcp): MCP server package
+- [Smithery](https://smithery.ai/server/@tponscr-debug/oracle-h-mcp): One-click MCP install
+- [Dashboard](https://oracle-h.online): Human approval interface
+- [GitHub](https://github.com/tponscr-debug/oracle-h): Dashboard source code

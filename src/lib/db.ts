@@ -23,6 +23,17 @@ let db: Database.Database | null = null;
 export function getDb(): Database.Database {
   if (db) return db;
 
+  // Fail-fast in production if critical secrets are missing
+  if (process.env.NODE_ENV === "production") {
+    const required = ["ORACLE_ADMIN_SECRET", "ORACLE_WEBHOOK_SECRET", "TELEGRAM_WEBHOOK_SECRET"];
+    for (const key of required) {
+      if (!process.env[key]) {
+        console.error(`[ORACLE-H] FATAL: ${key} is not set. Refusing to start.`);
+        process.exit(1);
+      }
+    }
+  }
+
   db = new Database(DB_PATH);
 
   // Performance pragmas
@@ -73,20 +84,22 @@ export function getDb(): Database.Database {
   `);
 
   // ── Seed : agent de démonstration ───────────────────────────────────────────
-  const agentExists = db
-    .prepare("SELECT id FROM agents WHERE id = ?")
-    .get("agent-demo-001");
+  if (process.env.SEED_DEMO_AGENT !== "false") {
+    const agentExists = db
+      .prepare("SELECT id FROM agents WHERE id = ?")
+      .get("agent-demo-001");
 
-  if (!agentExists) {
-    db.prepare(`
-      INSERT INTO agents (id, name, callback_url, signature_key)
-      VALUES (?, ?, ?, ?)
-    `).run(
-      "agent-demo-001",
-      "OpenClaw Demo Agent",
-      "https://webhook.site/oracle-demo",
-      "demo-signature-key-change-in-production"
-    );
+    if (!agentExists) {
+      db.prepare(`
+        INSERT INTO agents (id, name, callback_url, signature_key)
+        VALUES (?, ?, ?, ?)
+      `).run(
+        "agent-demo-001",
+        "OpenClaw Demo Agent",
+        "https://webhook.site/oracle-demo",
+        "demo-signature-key-change-in-production"
+      );
+    }
   }
 
   return db;
