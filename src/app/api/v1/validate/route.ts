@@ -166,18 +166,90 @@ export async function POST(req: NextRequest) {
 
         const baseUrl = req.headers.get("origin") || process.env.NEXT_PUBLIC_BASE_URL || "https://oracle-h.online";
 
+        // 6.4. Alerte "nouvel utilisateur réel" si c'est la première requête de cet agent (hors demo)
+        const DEMO_KEY = "demo-signature-key-change-in-production";
+        const isRealAgent = signatureKey !== DEMO_KEY;
+        if (isRealAgent) {
+            const priorCount = (db.prepare(
+                "SELECT COUNT(*) as cnt FROM validation_requests WHERE agent_id = ?"
+            ).get(agent_id) as { cnt: number }).cnt;
+
+            if (priorCount <= 1) {
+                // C'est leur toute première requête — envoie une alerte spéciale
+                const telegramBotToken = process.env.TELEGRAM_BOT_TOKEN;
+                const telegramChatId = process.env.TELEGRAM_CHAT_ID;
+                if (telegramBotToken && telegramChatId) {
+                    fetch(`https://api.telegram.org/bot${telegramBotToken}/sendMessage`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            chat_id: telegramChatId,
+                            parse_mode: "HTML",
+                            text: [
+                                `🎉 <b>ORACLE-H — Nouvel utilisateur !</b>`,
+                                ``,
+                                `Un vrai agent vient de soumettre sa première requête.`,
+                                ``,
+                                `🤖 <b>Agent :</b> ${agent.name}`,
+                                `🆔 <b>ID :</b> <code>${agent_id}</code>`,
+                                `⚡ <b>Action :</b> ${action.slice(0, 100)}`,
+                                ``,
+                                `<a href="${baseUrl}/dashboard">Voir le dashboard →</a>`,
+                            ].join("\n"),
+                        }),
+                    }).catch(() => {});
+                }
+            }
+        }
+
         // 6.5. Notifier via Telegram (Optionnel)
         const telegramBotToken = process.env.TELEGRAM_BOT_TOKEN;
         const telegramChatId = process.env.TELEGRAM_CHAT_ID;
         if (telegramBotToken && telegramChatId) {
-            const telegramMessage = `🚨 <b>ORACLE-H — Validation Requise</b>\n\n` +
-                `🤖 <b>Agent:</b> ${agent.name}\n` +
-                `🎯 <b>Action:</b> ${action}\n` +
-                `💰 <b>Montant en jeu:</b> $${financial_amount.toLocaleString("fr-FR")}\n\n` +
-                `🧠 <b>Rationnel de l'Agent:</b>\n<i>"${rationale}"</i>\n\n` +
-                `⚠️ <b>Impact Projeté:</b>\n${projected_impact}\n\n` +
-                `🛡️ <b>Fiabilité (Si Approuvé):</b> ${Math.round(reliability.p_after * 100)}%\n\n` +
-                `🔗 <b>Ouvrir l'Audit Complet:</b>\n${baseUrl}/?highlight=${requestId}`;
+            // Risk level based on financial amount and keywords
+            const highRiskWords = /delet|drop|wipe|purge|destroy|payment|transfer|deploy|produc/i;
+            const riskLevel = financial_amount >= 1000
+                ? { emoji: "🔴", label: "RISQUE ÉLEVÉ" }
+                : financial_amount > 0 || highRiskWords.test(action)
+                ? { emoji: "🟡", label: "RISQUE MODÉRÉ" }
+                : { emoji: "🟢", label: "RISQUE FAIBLE" };
+
+            const expiryMins = expires_in_seconds
+                ? Math.round(expires_in_seconds / 60)
+                : 5;
+
+            const sep = "━━━━━━━━━━━━━━━━━━━━━━━━";
+
+            const telegramMessage = [
+                `${riskLevel.emoji} <b>ORACLE-H · ${riskLevel.label}</b>`,
+                ``,
+                sep,
+                ``,
+                `🤖 <b>Agent</b>`,
+                `${agent.name} <code>(${agent_id})</code>`,
+                ``,
+                `⚡ <b>Action demandée</b>`,
+                `${action}`,
+                ``,
+                `🧠 <b>Pourquoi l'agent fait ça</b>`,
+                `<i>${rationale}</i>`,
+                ``,
+                `🚨 <b>Ce qui se passe si c'est une erreur</b>`,
+                `${projected_impact}`,
+                ...(financial_amount > 0 ? [
+                    ``,
+                    `💰 <b>Enjeu financier</b>`,
+                    `$${financial_amount.toLocaleString("en-US")}`,
+                ] : []),
+                ``,
+                sep,
+                ``,
+                `📊 Sans validation : ${Math.round(reliability.p_before * 100)}% de succès`,
+                `✅ Avec ta décision : <b>${Math.round(reliability.p_after * 100)}%</b>`,
+                ``,
+                `⏳ Expire dans <b>${expiryMins} min</b> · <code>${requestId}</code>`,
+                `🔗 <a href="${baseUrl}/dashboard?highlight=${requestId}">Voir dans le dashboard</a>`,
+            ].join("\n");
 
             fetch(`https://api.telegram.org/bot${telegramBotToken}/sendMessage`, {
                 method: "POST",

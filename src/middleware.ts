@@ -9,7 +9,7 @@ export function middleware(req: NextRequest) {
     // - /api/v1/requests (données du dashboard)
     // - /api/v1/decide (prise de décision)
     const isProtected =
-        url.pathname === '/' ||
+        url.pathname === '/dashboard' ||
         url.pathname === '/api/v1/requests' ||
         url.pathname.startsWith('/api/v1/decide');
 
